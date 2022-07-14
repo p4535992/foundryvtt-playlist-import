@@ -37,6 +37,5 @@
   "playlist_import.ShouldDeletePlaylist": "Borrar lista antes de importar",
   "playlist_import.ShouldDeletePlaylistHint": "Si se habilita, si una lista tiene la etiqueta de 'modulo de importación de listas' se borrará antes de intentar una nueva importación. Es útil cuando borra algún directorio en el disco y quiere quitar las listas antiguas en el mundo",
   "playlist_import.MaintainOriginalFolderName": "Mantener nombre del directorio original",
-  "playlist_import.MaintainOriginalFolderNameHint": "En lugar de usar el nombre por jerarquía, este ajusté hará que se fuerce a crear una lista con el nombre del directorio actual, de modo que en lugar de 'padre_hijo' será simplemente 'hijo'",
-  "playlist_import.CustomRegexDeleteHint": "Ajusta la expresión regular para que borre datos innecesarios basados en preferencias personales. Se usa en la primera pasada cuando se quitan cosas como '-' '_' y nombres que empiezan por un número"
+  "playlist_import.MaintainOriginalFolderNameHint": "En lugar de usar el nombre por jerarquía, este ajusté hará que se fuerce a crear una lista con el nombre del directorio actual, de modo que en lugar de 'padre_hijo' será simplemente 'hijo'"
 }
