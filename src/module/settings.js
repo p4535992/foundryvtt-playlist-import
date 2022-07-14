@@ -1,7 +1,8 @@
 import CONSTANTS from './constants.js';
 
 export const registerSettings = function () {
-  game.settings.register(PLIMP.MODULENAME, 'songs', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'songs', {
     name: `${CONSTANTS.MODULE_NAME}.Songs`,
     hint: `${CONSTANTS.MODULE_NAME}.SongsHint`,
     scope: 'world',
@@ -9,7 +10,8 @@ export const registerSettings = function () {
     default: {},
     type: Object,
   });
-  game.settings.register(PLIMP.MODULENAME, 'bucket', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'bucket', {
     name: `${CONSTANTS.MODULE_NAME}.BucketSelect`,
     hint: `${CONSTANTS.MODULE_NAME}.BucketSelectHint`,
     scope: 'world',
@@ -17,7 +19,8 @@ export const registerSettings = function () {
     default: '',
     type: String,
   });
-  game.settings.register(PLIMP.MODULENAME, 'shouldRepeat', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'shouldRepeat', {
     name: `${CONSTANTS.MODULE_NAME}.ShouldRepeat`,
     hint: `${CONSTANTS.MODULE_NAME}.ShouldRepeatHint`,
     scope: 'world',
@@ -25,7 +28,8 @@ export const registerSettings = function () {
     default: false,
     type: Boolean,
   });
-  game.settings.register(PLIMP.MODULENAME, 'shouldStream', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'shouldStream', {
     name: `${CONSTANTS.MODULE_NAME}.ShouldStream`,
     hint: `${CONSTANTS.MODULE_NAME}.ShouldStreamHint`,
     scope: 'world',
@@ -33,7 +37,8 @@ export const registerSettings = function () {
     default: false,
     type: Boolean,
   });
-  game.settings.register(PLIMP.MODULENAME, 'folderDir', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'folderDir', {
     name: `${CONSTANTS.MODULE_NAME}.FolderDir`,
     hint: `${CONSTANTS.MODULE_NAME}.FolderDirHint`,
     scope: 'world',
@@ -42,7 +47,8 @@ export const registerSettings = function () {
     type: String,
     filePicker: true,
   });
-  game.settings.register(PLIMP.MODULENAME, 'logVolume', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'logVolume', {
     name: `${CONSTANTS.MODULE_NAME}.LogVolume`,
     hint: `${CONSTANTS.MODULE_NAME}.LogVolumeHint`,
     scope: 'world',
@@ -50,7 +56,8 @@ export const registerSettings = function () {
     default: '0.5',
     type: String,
   });
-  game.settings.register(PLIMP.MODULENAME, 'enableDuplicateChecking', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'enableDuplicateChecking', {
     name: `${CONSTANTS.MODULE_NAME}.EnableDuplicate`,
     hint: `${CONSTANTS.MODULE_NAME}.EnableDuplicateHint`,
     scope: 'world',
@@ -58,7 +65,8 @@ export const registerSettings = function () {
     default: true,
     type: Boolean,
   });
-  game.settings.register(PLIMP.MODULENAME, 'customRegexDelete', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'customRegexDelete', {
     name: `${CONSTANTS.MODULE_NAME}.CustomRegexDelete`,
     hint: `${CONSTANTS.MODULE_NAME}.CustomRegexDeleteHint`,
     scope: 'world',
@@ -66,7 +74,8 @@ export const registerSettings = function () {
     default: '^\\d\\d+ *_*-* *',
     type: String,
   });
-  game.settings.register(PLIMP.MODULENAME, 'shouldOverridePlaylist', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'shouldOverridePlaylist', {
     name: `${CONSTANTS.MODULE_NAME}.ShouldOverridePlaylist`,
     hint: `${CONSTANTS.MODULE_NAME}.ShouldOverridePlaylistHint`,
     scope: 'world',
@@ -76,7 +85,8 @@ export const registerSettings = function () {
   });
   let sources = new FilePicker().sources;
   let options = Object.keys(sources);
-  game.settings.register(PLIMP.MODULENAME, 'source', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'source', {
     name: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSource`),
     hint: `${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSourceHint`)} [${options}]`,
     scope: 'world',
@@ -84,7 +94,8 @@ export const registerSettings = function () {
     default: 'data',
     type: String,
   });
-  game.settings.register(PLIMP.MODULENAME, 'shouldDeletePlaylist', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'shouldDeletePlaylist', {
     name: `${CONSTANTS.MODULE_NAME}.ShouldDeletePlaylist`,
     hint: `${CONSTANTS.MODULE_NAME}.ShouldDeletePlaylistHint`,
     scope: 'world',
@@ -92,7 +103,8 @@ export const registerSettings = function () {
     default: false,
     type: Boolean,
   });
-  game.settings.register(PLIMP.MODULENAME, 'maintainOriginalFolderName', {
+
+  game.settings.register(CONSTANTS.MODULE_NAME, 'maintainOriginalFolderName', {
     name: `${CONSTANTS.MODULE_NAME}.MaintainOriginalFolderName`,
     hint: `${CONSTANTS.MODULE_NAME}.MaintainOriginalFolderNameHint`,
     scope: 'world',

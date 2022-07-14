@@ -43,7 +43,8 @@
       "path": "lang/es.json"
     }
   ],
-  "scripts": ["./config.js", "./main.js"],
+  "scripts": [],
+  "esmodules": ["./main.js"],
   "styles": [],
   "packs": [],
   "minimumCoreVersion": "0.8.9",
