@@ -75,7 +75,7 @@ class PlaylistImporterInitializer {
 
 	static hookDeletePlaylistSound() {
 		Hooks.on("deletePlaylistSound", (playlist, data, flags, id) => {
-			const playlistName = playlist.data.name;
+			const playlistName = playlist.name;
 			const soundName = data.path;
 			PlaylistImporterInitializer._removeSound(playlistName, [soundName]);
 		});
@@ -252,10 +252,6 @@ class PlaylistImporter {
 
 	_generatePlaylist(playlistName) {
 		return new Promise(async (resolve, reject) => {
-			// const is08x = game.data.version.split(".")[1] === "8"
-			// const playlistExists = is08x
-			//     ? await game.playlists.entities.find((p) => p.name === playlistName)
-			//     : await game.playlists.contents.find((p) => p.name === playlistName);
 			let playlist = game.playlists?.contents.find((p) => p.name === playlistName);
 			let playlistExists = playlist ? true : false;
 			if (playlistExists) {
@@ -306,10 +302,6 @@ class PlaylistImporter {
 		}
 		logVolume = AudioHelper.inputToVolume(logVolume);
 
-		// const is08x = game.data.version.split(".")[1] === "8"
-		// let playlist = is08x
-		//     ? game.playlists.entities.find((p) => p.name === playlistName)
-		//     : game.playlists.contents.find((p) => p.name === playlistName);
 		const playlist = game.playlists?.contents.find((p) => p.name === playlistName);
 
 		if (!playlist) {
@@ -369,11 +361,6 @@ class PlaylistImporter {
 		currentList[(playlistName + trackName).toLowerCase()] = true;
 		await game.settings.set(CONSTANTS.MODULE_NAME, "songs", currentList);
 
-		// const is08x = game.data.version.split(".")[1] === "8"
-		// if (is08x)
-		//     await playlist.createEmbeddedEntity("PlaylistSound", { name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }, {});
-		// else
-		//     await playlist.createEmbeddedDocuments("PlaylistSound", [{ name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }], {});
 		await playlist.createEmbeddedDocuments(
 			"PlaylistSound",
 			[{ name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],

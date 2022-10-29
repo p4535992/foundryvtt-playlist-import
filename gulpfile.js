@@ -4,7 +4,7 @@
 /**
  * This is important for the bundle.js
  */
-const mainFilePath = `src/pin-cushion.js`; // MOD 4535992
+const mainFilePath = `src/main.js`; // MOD 4535992
 
 const gulp = require(`gulp`);
 const fs = require(`fs`);
