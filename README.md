@@ -26,17 +26,19 @@ Fortunately, you should be able to use releases to download a compatible version
 
 ![example](wiki/imgs/example.gif)
 
+## NOTE: This module is **under maintenance**, I have no plans to update or add features. However, I will try to fix any bugs as possible. Any contribution is welcome.
+
 ## Installation
 
-It's always easiest to install modules from the in game add-on browser.
+It's always better and easier to install modules through in in app browser.
 
 To install this module manually:
-1.  Inside the Foundry "Configuration and Setup" screen, click "Add-on Modules"
-2.  Click "Install Module"
-3.  In the "Manifest URL" field, paste the following url:
-`https://raw.githubusercontent.com/JacobMcAuley/playlist_import/master/module.json`
-4.  Click 'Install' and wait for installation to complete
-5.  Don't forget to enable the module in game using the "Manage Module" button
+1. Inside the Foundry "Configuration and Setup" screen, click "Add-on Modules"
+2. Click "Install Module"
+3. In the "Manifest URL" field, paste the following url:
+`https://raw.githubusercontent.com/p4535992/foundryvtt-playlist-import/master/src/module.json`
+4. Click 'Install' and wait for installation to complete
+5. Don't forget to enable the module in game using the "Manage Module" button
 
 ## Known issue
 
