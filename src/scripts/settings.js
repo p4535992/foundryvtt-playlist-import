@@ -74,15 +74,18 @@ export const registerSettings = function () {
 		default: false,
 		type: Boolean,
 	});
-	let sources = new FilePicker().sources;
-	let options = Object.keys(sources);
+	// let sources = new FilePicker().sources;
+	// let options = Object.keys(sources);
 	game.settings.register(CONSTANTS.MODULE_NAME, "source", {
 		name: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSource`),
-		hint: `${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSourceHint`)} [${options}]`,
+		hint: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSourceHint`),
+		// hint: `${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSourceHint`)} [${options}]`,
 		scope: "world",
 		config: true,
 		default: "data",
 		type: String,
+		// https://foundryvtt.wiki/en/development/api/settings
+		filePicker: "folder"
 	});
 	game.settings.register(CONSTANTS.MODULE_NAME, "shouldDeletePlaylist", {
 		name: `${CONSTANTS.MODULE_NAME}.ShouldDeletePlaylist`,

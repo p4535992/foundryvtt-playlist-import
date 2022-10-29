@@ -42,7 +42,7 @@ To install this module manually:
 
 ## Known issue
 
-- The dialog need some very adjustament, for now just ignore whart you see, for lack of the time on developer side, anyone is welcome to open a PR with a loading dialog.
+- The dialog need some very adjustament, for now just ignore what you see, for lack of the time on developer side, anyone is welcome to open a PR with a loading dialog.
 
 ### Features
 

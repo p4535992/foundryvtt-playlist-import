@@ -1,3 +1,7 @@
+## 1.8.1
+
+- Upgrade to fvtt10
+
 ## 1.7.5
 
 - Some clean up and better design pattern
