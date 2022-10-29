@@ -13,6 +13,8 @@
 
 ![GitHub all releases](https://img.shields.io/github/downloads/JacobMcAuley/playlist_import/total?style=for-the-badge)
 
+# [THIS MODULE IS BEEN TRANSFERED HERE](https://github.com/p4535992/foundryvtt-playlist-import)
+
 This module aims to simplify the process of adding multiple music tracks to Foundry VTT, allowing for bulk importation of songs.
 
 If you're like me, you probably enjoy amassing a large collection of songs to play for your players! However, importing your songs one at a time can be sluggish and time consuming. Playlist importer allows you to bulk import all of your songs!
