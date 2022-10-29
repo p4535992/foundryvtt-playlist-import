@@ -1,5 +1,5 @@
-import { registerSettings } from './module/settings.js';
-import CONSTANTS from './module/constants.js';
+import { registerSettings } from './scripts/settings.js';
+import CONSTANTS from './scripts/constants.js';
 
 let PLIMP = {};
 
