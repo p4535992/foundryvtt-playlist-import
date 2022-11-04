@@ -257,11 +257,28 @@ class PlaylistImporter {
 			if (playlistExists) {
 				const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
 				if (shouldOverridePlaylist) {
-					await playlist.delete();
+				    // 	await playlist.delete();
+					playlist = await Playlist.update({
+						name: playlistName,
+						permission: {
+							default: 0,
+						},
+						flags: {},
+						sounds: [],
+						mode: 0,
+						playing: false,
+					});
 				}
-				playlistExists = false;
+                await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+				// playlistExists = false;
+                try{
+				    if (this.DEBUG) console.log(`Playlist-Importer: Successfully retrieved playlist: ${playlistName}`);
+					resolve(true);
+				} catch (error) {
+					reject(false);
+				}
 			}
-			if (!playlistExists) {
+			else {
 				try {
 					playlist = await Playlist.create({
 						name: playlistName,
@@ -341,7 +358,7 @@ class PlaylistImporter {
 										shouldRepeat,
 										logVolume,
 										shouldStream
-									);
+									);mySoundLists
 								}
 							}
 						} else {
@@ -361,11 +378,30 @@ class PlaylistImporter {
 		currentList[(playlistName + trackName).toLowerCase()] = true;
 		await game.settings.set(CONSTANTS.MODULE_NAME, "songs", currentList);
 
-		await playlist.createEmbeddedDocuments(
-			"PlaylistSound",
-			[{ name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],
-			{}
-		);
+        const mySoundLists = playlist.sounds?.filter((s) => s.name === trackName) || [];
+        const mySoundExists = mySoundLists.length > 0 ? true : false;
+        const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
+        if (mySoundExists && !shouldOverridePlaylist) {
+            trackName = trackName + "-" + mySoundLists.length;
+        }
+
+        const sound = playlist.sounds.find((s) => (s.name === trackName));
+        const soundExists = sound ? true : false;
+        if(soundExists) {
+            if(shouldOverridePlaylist) {
+                await playlist.updateEmbeddedDocuments(
+                    "PlaylistSound",
+                    [{ id: sound.id, name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],
+                    {}
+                );
+            }
+        } else {
+            await playlist.createEmbeddedDocuments(
+                "PlaylistSound",
+                [{ name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],
+                {}
+            );
+        }
 	}
 
 	/**
@@ -475,7 +511,7 @@ class PlaylistImporter {
 			const playlists = game.playlists?.contents;
 			for (const playlist of playlists) {
 				const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
-				if (playlistHasFlag && playlistHasFlag == true) {
+				if (String(playlistHasFlag) === "true") {
 					await playlist.delete();
 				}
 			}
@@ -500,7 +536,7 @@ class PlaylistImporter {
 
 				for (const dirName of localDirs) {
 					if (resp.target != dirName && !this._blackList.includes(dirName)) {
-						finishedDirs = this._searchOnSubFoler(source, dirName, options, playlistName, finishedDirs);
+						finishedDirs = this._searchOnSubFolder(source, dirName, options, playlistName, finishedDirs);
 						this._blackList.push(dirName);
 					}
 				}
@@ -518,7 +554,7 @@ class PlaylistImporter {
 
 	_blackList = [];
 
-	_searchOnSubFoler(source, path, options, dirNameParent, finishedDirs) {
+	_searchOnSubFolder(source, path, options, dirNameParent, finishedDirs) {
 		FilePicker.browse(source, path, options).then(async (resp) => {
 			const localDirs = resp.dirs || [];
 			// let finishedDirs = 0;
@@ -529,10 +565,11 @@ class PlaylistImporter {
 			if (game.settings.get(CONSTANTS.MODULE_NAME, "maintainOriginalFolderName")) {
 				dirNameCustom = playlistName;
 			}
-			const myPlaylists = game.playlists?.contents.filter((p) => p.name === dirNameCustom) || [];
-			const myPlaylistExists = myPlaylists.length > 0 ? true : false;
-			if (myPlaylistExists) {
-				dirNameCustom = dirNameCustom + "-" + myPlaylists.length;
+			const myPlaylistLists = game.playlists?.contents.filter((p) => p.name === dirNameCustom) || [];
+			const myPlaylistExists = myPlaylistLists.length > 0 ? true : false;
+            const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
+			if (myPlaylistExists && !shouldOverridePlaylist) {
+				dirNameCustom = dirNameCustom + "-" + myPlaylistLists.length;
 			}
 
 			const success = await this._generatePlaylist(dirNameCustom);
@@ -542,7 +579,7 @@ class PlaylistImporter {
 
 			for (const dirName of localDirs) {
 				if (resp.target != dirName && !this._blackList.includes(dirName)) {
-					finishedDirs = this._searchOnSubFoler(source, dirName, options, dirNameCustom, finishedDirs);
+					finishedDirs = this._searchOnSubFolder(source, dirName, options, dirNameCustom, finishedDirs);
 					this._blackList.push(dirName);
 				}
 			}
