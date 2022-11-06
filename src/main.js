@@ -1,5 +1,6 @@
 import { registerSettings } from "./scripts/settings.js";
 import CONSTANTS from "./scripts/constants.js";
+import { info, debug, error } from "./scripts/lib/lib.js";
 
 let PLIMP = {};
 
@@ -139,7 +140,7 @@ class PlaylistImporter {
 
 	_validateFileType(fileName) {
 		const ext = fileName.split(".").pop();
-		if (this.DEBUG) console.log(`Playlist-Importer: Extension is determined to be (${ext}).`);
+		info(`Extension is determined to be (${ext}).`);
 
 		return !!ext.match(/(mp3|wav|ogg|flac|webm|m4a)+/g);
 	}
@@ -231,17 +232,16 @@ class PlaylistImporter {
 			if (i === 0 || i === words.length - 1 || !small.includes(words[i])) {
 				try {
 					words[i] = words[i][0].toUpperCase() + words[i].substr(1);
-				} catch (error) {
-					console.log(error);
-					console.log(`Error in attempting to parse song ${name}`);
+				} catch (e) {
+					error(e);
+					error(`Error in attempting to parse song ${name}`);
 				}
 			}
 		}
 
 		name = words.join(" ");
 
-		if (this.DEBUG)
-			console.log(`Playlist-Importer: Converting playlist name to eliminate spaces and extension: ${name}.`);
+		debug(`Converting playlist name to eliminate spaces and extension: ${name}.`);
 		return name;
 	}
 
@@ -257,30 +257,33 @@ class PlaylistImporter {
 			if (playlistExists) {
 				const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
 				if (shouldOverridePlaylist) {
-				    // 	await playlist.delete();
-					playlist = await Playlist.update({
-						name: playlistName,
-						permission: {
-							default: 0,
-						},
-						flags: {},
-						sounds: [],
-						mode: 0,
-						playing: false,
-					});
+					// 	await playlist.delete();
+					info(`Retrieved playlist '${playlist.id}|${playlist.name}'`);
+					// let playlistUpdated = await playlist.update({
+					// 	name: playlistName,
+					// 	permission: {
+					// 		default: 0,
+					// 	},
+					// 	flags: {},
+					// 	sounds: [],
+					// 	mode: 0,
+					// 	playing: false,
+					// });
+					info(`Update playlist '${playlist.id}|${playlist.name}'`);
 				}
-                await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+				await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
 				// playlistExists = false;
-                try{
-				    if (this.DEBUG) console.log(`Playlist-Importer: Successfully retrieved playlist: ${playlistName}`);
+				try {
+					info(`Successfully retrieved playlist: ${playlistName}`);
 					resolve(true);
-				} catch (error) {
+				} catch (e) {
+					error(e);
 					reject(false);
 				}
-			}
-			else {
+			} else {
 				try {
-					playlist = await Playlist.create({
+					info(`Create playlist '${playlistName}'`);
+					let playlistCreated = await Playlist.create({
 						name: playlistName,
 						permission: {
 							default: 0,
@@ -290,10 +293,11 @@ class PlaylistImporter {
 						mode: 0,
 						playing: false,
 					});
-					await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-					if (this.DEBUG) console.log(`Playlist-Importer: Successfully created playlist: ${playlistName}`);
+					await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+					info(`Successfully created playlist: ${playlistCreated.name}`);
 					resolve(true);
-				} catch (error) {
+				} catch (e) {
+					error(e);
 					reject(false);
 				}
 			}
@@ -314,7 +318,7 @@ class PlaylistImporter {
 		const shouldStream = game.settings.get(CONSTANTS.MODULE_NAME, "shouldStream");
 		let logVolume = parseFloat(game.settings?.get(CONSTANTS.MODULE_NAME, "logVolume"));
 		if (isNaN(logVolume)) {
-			if (this.DEBUG) console.log("Invalid type logVolume");
+			debug(`Invalid type logVolume`);
 			return;
 		}
 		logVolume = AudioHelper.inputToVolume(logVolume);
@@ -348,7 +352,7 @@ class PlaylistImporter {
 								} else {
 									// if (!dupCheck || currentList[(playlistName + trackName).toLowerCase()] != true) {
 									// A weird way of saying always succeed if dupCheck is on otherwise see if the track is in the list
-									if (this.DEBUG) console.log(`Playlist-importer: Song ${trackName} not in list.`);
+									debug(`Song ${trackName} not in list ${playlistName}.`);
 									await this._addSong(
 										currentList,
 										trackName,
@@ -358,14 +362,14 @@ class PlaylistImporter {
 										shouldRepeat,
 										logVolume,
 										shouldStream
-									);mySoundLists
+									);
+									debug(`Song ${trackName} added to list ${playlistName}.`);
 								}
 							}
 						} else {
-							if (this.DEBUG)
-								console.log(
-									`Playlist-Importer: Determined ${fileName} to be of an invalid ext. If you believe this to be an error contact me on Discord.`
-								);
+							debug(
+								`Determined ${fileName} to be of an invalid ext. If you believe this to be an error contact me on Discord.`
+							);
 						}
 					}
 					resolve(true);
@@ -378,30 +382,33 @@ class PlaylistImporter {
 		currentList[(playlistName + trackName).toLowerCase()] = true;
 		await game.settings.set(CONSTANTS.MODULE_NAME, "songs", currentList);
 
-        const mySoundLists = playlist.sounds?.filter((s) => s.name === trackName) || [];
-        const mySoundExists = mySoundLists.length > 0 ? true : false;
-        const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
-        if (mySoundExists && !shouldOverridePlaylist) {
-            trackName = trackName + "-" + mySoundLists.length;
-        }
+		const mySoundLists = playlist.sounds?.filter((s) => s.name === trackName) || [];
+		const mySoundExists = mySoundLists.length > 0 ? true : false;
+		const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
+		if (mySoundExists && !shouldOverridePlaylist) {
+			trackName = trackName + "-" + mySoundLists.length;
+		}
 
-        const sound = playlist.sounds.find((s) => (s.name === trackName));
-        const soundExists = sound ? true : false;
-        if(soundExists) {
-            if(shouldOverridePlaylist) {
-                await playlist.updateEmbeddedDocuments(
-                    "PlaylistSound",
-                    [{ id: sound.id, name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],
-                    {}
-                );
-            }
-        } else {
-            await playlist.createEmbeddedDocuments(
-                "PlaylistSound",
-                [{ name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],
-                {}
-            );
-        }
+		const sound = playlist.sounds.find((s) => s.name === trackName);
+		const soundExists = sound ? true : false;
+		if (soundExists) {
+			if (shouldOverridePlaylist) {
+				info(`Retrieved sound '${sound.id}|${trackName}' on playlist '${playlist.id}|${playlist.name}'`);
+				await playlist.updateEmbeddedDocuments(
+					"PlaylistSound",
+					[{ id: sound.id, name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],
+					{}
+				);
+				info(`Updated sound '${sound.id}|${trackName}' on playlist '${playlist.id}|${playlist.name}'`);
+			}
+		} else {
+			await playlist.createEmbeddedDocuments(
+				"PlaylistSound",
+				[{ name: trackName, path: fileName, repeat: shouldRepeat, volume: logVolume }],
+				{}
+			);
+			info(`Created sound '${trackName}' on playlist '${playlist.id}|${playlist.name}'`);
+		}
 	}
 
 	/**
@@ -425,6 +432,8 @@ class PlaylistImporter {
 	}
 
 	_playlistStatusPrompt() {
+		// TODO REMOVED UNTIL BETTER MANAGEMENT
+		/*
 		const playlistComplete = new Dialog({
 			title: "Status Update",
 			content: `<p>Number of playlists completed <span id="finished_playlists">0</span>/<span id="total_playlists">0</span></p>`,
@@ -439,6 +448,7 @@ class PlaylistImporter {
 			close: () => {},
 		});
 		playlistComplete.render(true);
+		*/
 	}
 
 	/**
@@ -463,11 +473,11 @@ class PlaylistImporter {
 				},
 				two: {
 					label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.CancelOperation`),
-					callback: () => console.log("Playlist-Importer: Canceled"),
+					callback: () => warn(`Canceled`),
 				},
 			},
 			default: "Cancel",
-			close: () => console.log("Playlist-Importer: Prompt Closed"),
+			close: () => warn(`Prompt Closed`),
 		});
 		clearMemoryPrompt.render(true);
 	}
@@ -491,7 +501,7 @@ class PlaylistImporter {
 				two: {
 					icon: '<i class="fas fa-times"></i>',
 					label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.CancelOperation`),
-					callback: () => console.log("Playlist-Importer: Canceled"),
+					callback: () => warn(`Canceled`),
 				},
 			},
 			default: "Cancel",
@@ -531,7 +541,7 @@ class PlaylistImporter {
 				const dirName = resp.target;
 				const playlistName = PlaylistImporter._convertToUserFriendly(PlaylistImporter._getBaseName(dirName));
 				const success = await this._generatePlaylist(playlistName);
-				if (this.DEBUG) console.log(`TT: ${dirName}: ${success} on creating playlists`);
+				debug(`TT: ${dirName}: ${success} on creating playlists`);
 				await this._getItemsFromDir(source, dirName, playlistName, options);
 
 				for (const dirName of localDirs) {
@@ -543,8 +553,8 @@ class PlaylistImporter {
 
 				$("#finished_playlists").html(++finishedDirs);
 
+				debug(`Operation Completed. Thank you!`);
 				$("#total_playlists").html(this._blackList.length);
-				if (this.DEBUG) console.log("Playlist-Importer: Operation Completed. Thank you!");
 				this._playlistCompletePrompt();
 			} finally {
 				this._blackList = [];
@@ -567,7 +577,7 @@ class PlaylistImporter {
 			}
 			const myPlaylistLists = game.playlists?.contents.filter((p) => p.name === dirNameCustom) || [];
 			const myPlaylistExists = myPlaylistLists.length > 0 ? true : false;
-            const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
+			const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
 			if (myPlaylistExists && !shouldOverridePlaylist) {
 				dirNameCustom = dirNameCustom + "-" + myPlaylistLists.length;
 			}

@@ -34,5 +34,11 @@
 	"playlist_import.ShouldDeletePlaylist": "Delete playlist before import",
 	"playlist_import.ShouldDeletePlaylistHint": "If enabled if a playlist has the flag of the 'playlist import module' it will be deleted before try the new import. This is useful for when you delete some folder on the disk and want to remove the old playlist on the game. WARNING: You will lose any id reference to these playlist and sounds.",
 	"playlist_import.MaintainOriginalFolderName": "Maintain original folder name",
-	"playlist_import.MaintainOriginalFolderNameHint": "Instead using the hierarchy naming this setting will force to create a playlist with the name of the current folder so instead 'parent_child' will be 'child'"
+	"playlist_import.MaintainOriginalFolderNameHint": "Instead using the hierarchy naming this setting will force to create a playlist with the name of the current folder so instead 'parent_child' will be 'child'",
+	"playlist_import.setting.reset.name": "Reset settings to default",
+	"playlist_import.setting.reset.label": "Reset Settings To Default",
+	"playlist_import.setting.reset.hint": "This will reset all of the settings of back to the active game system's default.",
+	"playlist_import.setting.debug.name": "Enable debugging",
+	"playlist_import.setting.debug.label": "Prints debug messages to the console",
+	"playlist_import.setting.debug.hint": " "
 }

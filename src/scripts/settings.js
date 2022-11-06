@@ -71,7 +71,7 @@ export const registerSettings = function () {
 		hint: `${CONSTANTS.MODULE_NAME}.ShouldOverridePlaylistHint`,
 		scope: "world",
 		config: true,
-		default: false,
+		default: true,
 		type: Boolean,
 	});
 	// let sources = new FilePicker().sources;
@@ -85,7 +85,7 @@ export const registerSettings = function () {
 		default: "data",
 		type: String,
 		// https://foundryvtt.wiki/en/development/api/settings
-		filePicker: "folder"
+		filePicker: "folder",
 	});
 	game.settings.register(CONSTANTS.MODULE_NAME, "shouldDeletePlaylist", {
 		name: `${CONSTANTS.MODULE_NAME}.ShouldDeletePlaylist`,
@@ -99,6 +99,15 @@ export const registerSettings = function () {
 		name: `${CONSTANTS.MODULE_NAME}.MaintainOriginalFolderName`,
 		hint: `${CONSTANTS.MODULE_NAME}.MaintainOriginalFolderNameHint`,
 		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+	});
+	// ====================================================
+	game.settings.register(CONSTANTS.MODULE_NAME, "debug", {
+		name: `${CONSTANTS.MODULE_NAME}.setting.debug.name`,
+		hint: `${CONSTANTS.MODULE_NAME}.setting.debug.hint`,
+		scope: "client",
 		config: true,
 		default: false,
 		type: Boolean,
