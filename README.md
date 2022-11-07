@@ -17,6 +17,8 @@
 
 [![Translation status](https://weblate.foundryvtt-hub.com/widgets/playlist_import/-/287x66-black.png)](https://weblate.foundryvtt-hub.com/engage/playlist_import/)
 
+### If you want to buy me a coffee [![alt-text](https://img.shields.io/badge/-Patreon-%23ff424d?style=for-the-badge)](https://www.patreon.com/p4535992)
+
 This module aims to simplify the process of adding multiple music tracks to Foundry VTT, allowing for bulk importation of songs.
 
 If you're like me, you probably enjoy amassing a large collection of songs to play for your players! However, importing your songs one at a time can be sluggish and time consuming. Playlist importer allows you to bulk import all of your songs!
