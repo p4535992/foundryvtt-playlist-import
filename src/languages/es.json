@@ -3,7 +3,7 @@
 	"I18N.MAINTAINERS": "@Viriato139ac#0342",
 
 	"playlist_import.ImportButton": "Importar lista de reproducción",
-	"playlist_import.DeleteAllButton": "Delete All Imported Playlist",
+	"playlist_import.DeleteAllButton": "Borrar todas las listas importadas",
 	"playlist_import.ClearMemory": "Limpiar memoria del importador",
 	"playlist_import.ClearMemoryTitle": "AVISO: IRREVERSIBLE",
 	"playlist_import.ClearMemoryDescription": "¿Desea reiniciar la tabla de pistas almacenada? Esto hará que el importador crea que todas las pistas son nuevas",
@@ -20,8 +20,8 @@
 	"playlist_import.FolderDirHint": "Seleccione un directorio que sirva de directorio base de importación de música",
 	"playlist_import.SelectSource": "Seleccione fuente:",
 	"playlist_import.SelectSourceHint": "Las opciones incluyen ",
-	"playlist_import.BucketSelect": "S3 Bucket:",
-	"playlist_import.BucketSelectHint": "Si está usando un s3 bucket, introduzca aquí su nombre",
+	"playlist_import.BucketSelect": "Cubo S3:",
+	"playlist_import.BucketSelectHint": "Si está usando un cubo S3, introduzca aquí su nombre",
 	"playlist_import.ShouldRepeat": "Repetición de pistas",
 	"playlist_import.ShouldRepeatHint": "¿Se debe activar por defecto la repetición de pistas?",
 	"playlist_import.ShouldStream": "Transmisión de pistas",
@@ -37,5 +37,11 @@
 	"playlist_import.ShouldDeletePlaylist": "Borrar lista antes de importar",
 	"playlist_import.ShouldDeletePlaylistHint": "Si se habilita, si una lista tiene la etiqueta de 'modulo de importación de listas' se borrará antes de intentar una nueva importación. Es útil cuando borra algún directorio en el disco y quiere quitar las listas antiguas en el mundo",
 	"playlist_import.MaintainOriginalFolderName": "Mantener nombre del directorio original",
-	"playlist_import.MaintainOriginalFolderNameHint": "En lugar de usar el nombre por jerarquía, este ajusté hará que se fuerce a crear una lista con el nombre del directorio actual, de modo que en lugar de 'padre_hijo' será simplemente 'hijo'"
+	"playlist_import.MaintainOriginalFolderNameHint": "En lugar de usar el nombre por jerarquía, hará que se fuerce a crear una lista con el nombre del directorio actual, de modo que en lugar de 'padre_hijo' será simplemente 'hijo'",
+	"playlist_import.setting.reset.name": "Reiniciar ajustes",
+	"playlist_import.setting.reset.label": "Volver a los valores por defecto",
+	"playlist_import.setting.reset.hint": "Se reiniciarán todos los ajustes de vuelta a los valores por defecto del sistema activo",
+	"playlist_import.setting.debug.name": "Habilitar registro",
+	"playlist_import.setting.debug.label": "Volcar en la consola el registro de errores",
+	"playlist_import.setting.debug.hint": "Se volcarán en la consola los mensajes de registro del módulo"
 }
