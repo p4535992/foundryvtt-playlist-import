@@ -138,10 +138,8 @@ const createTransformer = () => {
                         return factory.updateExportDeclaration(node, node.decorators, node.modifiers, false, node.exportClause, newModuleSpecifier,undefined);
                     }
                 }
-                console.log(`22`);
                 return visitEachChild(node, visitor, context);
             }
-            console.log(`23`);
             return visitNode(node, visitor);
         };
     };

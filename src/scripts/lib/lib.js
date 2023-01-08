@@ -185,7 +185,7 @@ export async function handleAudioFiles(event, files, playlistName, uploadFolderP
 		playlist.createEmbeddedDocuments("PlaylistSound", sounds);
 		//await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
 		//await playlist?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
-	} 
+	}
 	// else {
 	// 	await Playlist.create({
 	// 		name: playlistName,
@@ -218,7 +218,9 @@ export async function playlistDirectoryPrototypeOnDropHandler(wrapped, ...args) 
 			const uploadFolderPath3 = decodeURI(uploadFolderPath2);
 			await handleAudioFiles(event, filteredFiles, playlistName, uploadFolderPath3);
 		} else {
-			warn(`Can't drop the song no playlist found on the drop handler.MAKE SURE TO DROP THE FILE AUDIO ON THE PLAYLIST NAME`);
+			warn(
+				`Can't drop the song no playlist found on the drop handler.MAKE SURE TO DROP THE FILE AUDIO ON THE PLAYLIST NAME`
+			);
 		}
 	} else {
 		// originalDropFunction(event);
