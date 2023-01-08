@@ -1,6 +1,13 @@
 import { registerSettings } from "./scripts/settings.js";
 import CONSTANTS from "./scripts/constants.js";
-import { info, debug, error, log, playlistDirectoryPrototypeOnDropHandler, createUploadFolderIfMissing } from "./scripts/lib/lib.js";
+import {
+	info,
+	debug,
+	error,
+	log,
+	playlistDirectoryPrototypeOnDropHandler,
+	createUploadFolderIfMissing,
+} from "./scripts/lib/lib.js";
 
 let PLIMP = {};
 
@@ -100,18 +107,20 @@ class PlaylistImporterInitializer {
 		});
 	}
 
-	static hookInit(){
-		Hooks.once('init', () => {
-			const originFolder = game.settings.get(CONSTANTS.MODULE_NAME, "source");
-			const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
-			createUploadFolderIfMissing(originFolder,uploadFolderPath)
-				.then(() => log(`Folder ${uploadFolderPath} is ready.`))
-				.catch(() => log(`User doesn't have permission to create the upload folder ${uploadFolderPath}.`));
-			
-			libWrapper.register(CONSTANTS.MODULE_NAME, 
-				"PlaylistDirectory.prototype._onDrop", 
-				playlistDirectoryPrototypeOnDropHandler, 
-				"MIXED");
+	static hookInit() {
+		Hooks.once("init", () => {
+			// const originFolder = game.settings.get(CONSTANTS.MODULE_NAME, "source");
+			// const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
+			// createUploadFolderIfMissing(originFolder, uploadFolderPath)
+			// 	.then(() => log(`Folder ${uploadFolderPath} is ready.`))
+			// 	.catch(() => log(`User doesn't have permission to create the upload folder ${uploadFolderPath}.`));
+
+			libWrapper.register(
+				CONSTANTS.MODULE_NAME,
+				"PlaylistDirectory.prototype._onDrop",
+				playlistDirectoryPrototypeOnDropHandler,
+				"MIXED"
+			);
 		});
 	}
 
@@ -311,7 +320,7 @@ class PlaylistImporter {
 						playing: false,
 					});
 					await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-					await playlist?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", dirPath);
+					await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", dirPath);
 					info(`Successfully created playlist: ${playlistCreated.name}`);
 					resolve(true);
 				} catch (e) {

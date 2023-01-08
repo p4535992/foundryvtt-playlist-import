@@ -160,60 +160,65 @@ export function dialogWarning(message, icon = "fas fa-exclamation-triangle") {
 // =====================================================
 
 export function createUploadFolderIfMissing(originFolder, uploadFolderPath) {
-    return getFolder(originFolder, uploadFolderPath)
-        .then(location => location.target === '.' && createFolder(originFolder, uploadFolderPath))
-        .catch(() => createFolder(originFolder, uploadFolderPath));
+	return getFolder(originFolder, uploadFolderPath)
+		.then((location) => location.target === "." && createFolder(originFolder, uploadFolderPath))
+		.catch(() => createFolder(originFolder, uploadFolderPath));
 }
 
 export function getFolder(source, target) {
-    return FilePicker.browse(source, target)
+	return FilePicker.browse(source, target);
 }
 
 export function createFolder(source, target, options = {}) {
-    return FilePicker.createDirectory(source, target, options);
+	return FilePicker.createDirectory(source, target, options);
 }
 
 export async function handleAudioFiles(event, files, playlistName, uploadFolderPath) {
-    const target = uploadFolderPath;
-    let sounds = [];
-    for (const file of files) {
-        let response = await FilePicker.upload('data', target, file);
-        sounds.push({ name: file.name, path: response.path });
-    }
-    let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
-    if (playlist) {
-        playlist.createEmbeddedDocuments("PlaylistSound", sounds);
-    } else {
-        await Playlist.create({
-            name: playlistName,
-            description: "Generated playlist",
-            flags: {},
-            sounds: sounds,
-            playing: false,
-        });
-		await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-		await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
-		info(`Successfully created playlist: ${playlistCreated.name}`);
-    }
+	const target = uploadFolderPath;
+	let sounds = [];
+	for (const file of files) {
+		let response = await FilePicker.upload("data", target, file);
+		sounds.push({ name: file.name, path: response.path });
+	}
+	let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
+	if (playlist) {
+		playlist.createEmbeddedDocuments("PlaylistSound", sounds);
+		//await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+		//await playlist?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
+	} 
+	// else {
+	// 	await Playlist.create({
+	// 		name: playlistName,
+	// 		description: "Generated playlist",
+	// 		flags: {},
+	// 		sounds: sounds,
+	// 		playing: false,
+	// 	});
+	// 	//await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+	// 	//await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
+	// 	info(`Successfully created playlist: ${playlistCreated.name}`);
+	// }
 }
 
 export async function playlistDirectoryPrototypeOnDropHandler(wrapped, ...args) {
-	//event.preventDefault();
-	//const files = event.dataTransfer.files;
-	const files = this.dataTransfer.files;
+	const [event] = args;
+	event.preventDefault();
+	const files = event.dataTransfer.files;
 	log(files);
 	if (files && files.length > 0) {
-		let filteredFiles = Array.from(files).filter(file => Object.keys(CONST.AUDIO_FILE_EXTENSIONS).includes(file.name.split('.').pop()));
-		const playListName = ""; // TODO
+		let filteredFiles = Array.from(files).filter((file) =>
+			Object.keys(CONST.AUDIO_FILE_EXTENSIONS).includes(file.name.split(".").pop())
+		);
+		const playlistName = event.toElement.innerText?.trim();
 		let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
-		if(playlist) {
+		if (playlist) {
 			const originFolder = game.settings.get(CONSTANTS.MODULE_NAME, "source");
 			const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
-			const uploadFolderPath2 = playlist.getFlag(CONSTANTS.MODULE_NAME, "directoryPath") 
-				?? uploadFolderPath;
-			await handleAudioFiles(this, filteredFiles, playListName, uploadFolderPath2);
+			const uploadFolderPath2 = playlist.getFlag(CONSTANTS.MODULE_NAME, "directoryPath") ?? uploadFolderPath;
+			const uploadFolderPath3 = decodeURI(uploadFolderPath2);
+			await handleAudioFiles(event, filteredFiles, playlistName, uploadFolderPath3);
 		} else {
-			warn(`Can't drop the song the playlist with name '${playlist.name}' doesn't exists`);
+			warn(`Can't drop the song no playlist found on the drop handler.MAKE SURE TO DROP THE FILE AUDIO ON THE PLAYLIST NAME`);
 		}
 	} else {
 		// originalDropFunction(event);

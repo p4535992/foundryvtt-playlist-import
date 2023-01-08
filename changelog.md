@@ -1,3 +1,8 @@
+### 1.8.4
+
+- Add drag and dorp support
+- Add more audio file support
+
 ### 1.8.3
 
 - Updated languages
