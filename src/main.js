@@ -3,6 +3,7 @@ import CONSTANTS from "./scripts/constants.js";
 import {
 	info,
 	debug,
+	warn,
 	error,
 	log,
 	playlistDirectoryPrototypeOnDropHandler,
@@ -353,7 +354,7 @@ class PlaylistImporter {
 		const playlist = game.playlists?.contents.find((p) => p.name === playlistName);
 
 		if (!playlist) {
-			ui.notifications?.warn("Cannot find a playlist with name '" + playlistName + "'");
+			warn("Cannot find a playlist with name '" + playlistName + "'", true);
 		}
 
 		return new Promise(async (resolve, reject) => {
