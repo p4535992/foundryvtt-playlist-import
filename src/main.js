@@ -1,6 +1,6 @@
 import { registerSettings } from "./scripts/settings.js";
 import CONSTANTS from "./scripts/constants.js";
-import { info, debug, error } from "./scripts/lib/lib.js";
+import { info, debug, error, log, playlistDirectoryPrototypeOnDropHandler, createUploadFolderIfMissing } from "./scripts/lib/lib.js";
 
 let PLIMP = {};
 
@@ -8,6 +8,7 @@ class PlaylistImporterInitializer {
 	constructor() {}
 
 	static initialize() {
+		PlaylistImporterInitializer.hookInit();
 		PlaylistImporterInitializer.hookReady();
 		PlaylistImporterInitializer.hookRenderPlaylistDirectory();
 		PlaylistImporterInitializer.hookRenderSettings();
@@ -99,6 +100,21 @@ class PlaylistImporterInitializer {
 		});
 	}
 
+	static hookInit(){
+		Hooks.once('init', () => {
+			const originFolder = game.settings.get(CONSTANTS.MODULE_NAME, "source");
+			const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
+			createUploadFolderIfMissing(originFolder,uploadFolderPath)
+				.then(() => log(`Folder ${uploadFolderPath} is ready.`))
+				.catch(() => log(`User doesn't have permission to create the upload folder ${uploadFolderPath}.`));
+			
+			libWrapper.register(CONSTANTS.MODULE_NAME, 
+				"PlaylistDirectory.prototype._onDrop", 
+				playlistDirectoryPrototypeOnDropHandler, 
+				"MIXED");
+		});
+	}
+
 	static hookReady() {
 		Hooks.on("ready", () => {
 			PLIMP.playlistImporter = new PlaylistImporter();
@@ -133,7 +149,7 @@ class PlaylistImporter {
 	}
 
 	/**
-	 * Validates the audio extension to be of type mp3, wav, ogg, flac, webm or m4a.
+	 * Validates the audio extension to be of type 'CONST.AUDIO_FILE_EXTENSIONS'
 	 * @private
 	 * @param {string} fileName
 	 */
@@ -141,8 +157,7 @@ class PlaylistImporter {
 	_validateFileType(fileName) {
 		const ext = fileName.split(".").pop();
 		info(`Extension is determined to be (${ext}).`);
-
-		return !!ext.match(/(mp3|wav|ogg|flac|webm|m4a)+/g);
+		return !!ext.match(/(aac|flac|m4a|mid|mp3|ogg|opus|wav|webm)+/g);
 	}
 
 	/**
@@ -190,7 +205,8 @@ class PlaylistImporter {
 	}
 
 	/**
-	 * Formats the filenames of songs to something more readable. You can add additional REGEX for other audio extensions.
+	 * Formats the filenames of songs to something more readable. You can add additional REGEX for other audio extensions
+	 * 'CONST.AUDIO_FILE_EXTENSIONS'.
 	 * @private
 	 * @param {string} name
 	 */
@@ -218,7 +234,7 @@ class PlaylistImporter {
 		const regexReplace = new RegExp(game.settings?.get(CONSTANTS.MODULE_NAME, "customRegexDelete"));
 		name = decodeURIComponent(name);
 		name = name
-			.split(/(.mp3|.mp4|.wav|.ogg|.flac|.m4a)+/g)[0]
+			.split(/(.aac|.flac|.m4a|.mid|.mp3|.ogg|.opus|.wav|.webm)+/g)[0]
 			.replace(regexReplace, "")
 			.replace(/[_]+/g, " ");
 
@@ -250,7 +266,7 @@ class PlaylistImporter {
 	 * @param {string} playlistName
 	 */
 
-	_generatePlaylist(playlistName) {
+	_generatePlaylist(playlistName, dirPath) {
 		return new Promise(async (resolve, reject) => {
 			let playlist = game.playlists?.contents.find((p) => p.name === playlistName);
 			let playlistExists = playlist ? true : false;
@@ -272,6 +288,7 @@ class PlaylistImporter {
 					info(`Update playlist '${playlist.id}|${playlist.name}'`);
 				}
 				await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+				await playlist?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", dirPath);
 				// playlistExists = false;
 				try {
 					info(`Successfully retrieved playlist: ${playlistName}`);
@@ -294,6 +311,7 @@ class PlaylistImporter {
 						playing: false,
 					});
 					await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+					await playlist?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", dirPath);
 					info(`Successfully created playlist: ${playlistCreated.name}`);
 					resolve(true);
 				} catch (e) {
@@ -540,7 +558,7 @@ class PlaylistImporter {
 				// $('#total_playlists').html((localDirs.length));
 				const dirName = resp.target;
 				const playlistName = PlaylistImporter._convertToUserFriendly(PlaylistImporter._getBaseName(dirName));
-				const success = await this._generatePlaylist(playlistName);
+				const success = await this._generatePlaylist(playlistName, dirName);
 				debug(`TT: ${dirName}: ${success} on creating playlists`);
 				await this._getItemsFromDir(source, dirName, playlistName, options);
 
@@ -582,7 +600,7 @@ class PlaylistImporter {
 				dirNameCustom = dirNameCustom + "-" + myPlaylistLists.length;
 			}
 
-			const success = await this._generatePlaylist(dirNameCustom);
+			const success = await this._generatePlaylist(dirNameCustom, dirName);
 			if (this.DEBUG) console.log(`TT: ${dirName}: ${success} on creating playlists`);
 			await this._getItemsFromDir(source, dirName, dirNameCustom, options);
 			// $('#finished_playlists').html(++finishedDirs);
