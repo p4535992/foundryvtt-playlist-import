@@ -209,7 +209,7 @@ export async function playlistDirectoryPrototypeOnDropHandler(wrapped, ...args) 
 		let filteredFiles = Array.from(files).filter((file) =>
 			Object.keys(CONST.AUDIO_FILE_EXTENSIONS).includes(file.name.split(".").pop())
 		);
-		const playlistName = event.toElement.innerText?.trim();
+		const playlistName = event.target?.innerText?.trim() ?? "";
 		let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
 		if (playlist) {
 			const originFolder = game.settings.get(CONSTANTS.MODULE_NAME, "source");

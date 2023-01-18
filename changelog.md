@@ -1,3 +1,8 @@
+
+### 1.8.6
+
+- Bug fix: https://github.com/p4535992/foundryvtt-playlist-import/issues/6
+
 ### 1.8.4-5
 
 - Add drag and dorp support
