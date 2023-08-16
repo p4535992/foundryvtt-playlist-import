@@ -1,96 +1,96 @@
 {
-	"id": "playlist_import",
-	"title": "Playlist Importer",
-	"description": "Speeds up the process of importing your sounds",
-	"version": "1.8.6",
-	"authors": [
-		{
-			"name": "Jacob McAuley"
-		},
-		{
-			"name": "p4535992",
-			"url": "https://github.com/p4535992",
-			"discord": "",
-			"twitter": "",
-			"patreon": "p4535992",
-			"github": "p4535992",
-			"ko-fi": "",
-			"reddit": "",
-			"email": ""
-		}
-	],
-	"type": "module",
-	"socket": true,
-	"includes": [
-		"./assets/**",
-		"./lang/**",
-		"./languages/**",
-		"./scripts/**",
-		"./styles/**",
-		"./templates/**",
-		"./module.json",
-		"./README.md",
-		"./icons/**",
-		"./packs/**"
-	],
-	"media": [
-		{
-			"type": "screenshot",
-			"url": "https://github.com/p4535992/media/raw/master/foundryvtt-playlist-import/create_pin.png"
-		},
-		{
-			"type": "screenshot",
-			"url": "https://github.com/p4535992/media/raw/master/foundryvtt-playlist-import/note-config.png"
-		},
-		{
-			"type": "screenshot",
-			"url": "https://github.com/p4535992/media/raw/master/foundryvtt-playlist-import/journal-preview.png"
-		}
-	],
-	"languages": [
-		{
-			"lang": "en",
-			"name": "English",
-			"path": "languages/en.json"
-		},
-		{
-			"lang": "es",
-			"name": "Español",
-			"path": "languages/es.json"
-		}
-	],
-	"scripts": [],
-	"esmodules": ["main.js"],
-	"styles": [],
-	"compatibility": {
-		"minimum": 10,
-		"verified": 10,
-		"maximum": 10
-	},
-	"url": "https://github.com/p4535992/foundryvtt-playlist-import",
-	"manifest": "https://github.com/p4535992/foundryvtt-playlist-import/releases/latest/download/module.json",
-	"download": "https://github.com/p4535992/foundryvtt-playlist-import/releases/latest/download/module.zip",
-	"readme": "https://github.com/p4535992/foundryvtt-playlist-import/blob/v1.8.6/README.md",
-	"changelog": "https://github.com/p4535992/foundryvtt-playlist-import/blob/v1.8.6/CHANGELOG.md",
-	"bugs": "https://github.com/p4535992/foundryvtt-playlist-import/issues",
-	"allowBugReporter": true,
-	"manifestPlusVersion": "1.2.0",
-	"relationships": {
-		"systems": [],
-		"requires": [
-			{
-				"id": "lib-wrapper",
-				"type": "module",
-				"manifest": "https://github.com/ruipin/fvtt-lib-wrapper/releases/latest/download/module.json",
-				"compatibility": {}
-			},
-			{
-				"id": "socketlib",
-				"type": "module",
-				"manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/develop/module.json",
-				"compatibility": {}
-			}
-		],
-		"conflicts": []
-	}
+  "id": "playlist_import",
+  "title": "Playlist Importer",
+  "description": "Speeds up the process of importing your sounds",
+  "version": "1.9.0",
+  "authors": [
+    {
+      "name": "Jacob McAuley"
+    },
+    {
+      "name": "p4535992",
+      "url": "https://github.com/p4535992",
+      "discord": "",
+      "twitter": "",
+      "patreon": "p4535992",
+      "github": "p4535992",
+      "ko-fi": "",
+      "reddit": "",
+      "email": ""
+    }
+  ],
+  "type": "module",
+  "socket": true,
+  "includes": [
+    "./assets/**",
+    "./lang/**",
+    "./languages/**",
+    "./scripts/**",
+    "./styles/**",
+    "./templates/**",
+    "./module.json",
+    "./README.md",
+    "./icons/**",
+    "./packs/**"
+  ],
+  "media": [
+    {
+      "type": "screenshot",
+      "url": "https://github.com/p4535992/media/raw/master/foundryvtt-playlist-import/create_pin.png"
+    },
+    {
+      "type": "screenshot",
+      "url": "https://github.com/p4535992/media/raw/master/foundryvtt-playlist-import/note-config.png"
+    },
+    {
+      "type": "screenshot",
+      "url": "https://github.com/p4535992/media/raw/master/foundryvtt-playlist-import/journal-preview.png"
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    },
+    {
+      "lang": "es",
+      "name": "Español",
+      "path": "languages/es.json"
+    }
+  ],
+  "scripts": [],
+  "esmodules": ["module.js"],
+  "styles": [],
+  "compatibility": {
+    "minimum": 11,
+    "verified": 11,
+    "maximum": 11
+  },
+  "url": "https://github.com/p4535992/foundryvtt-playlist-import",
+  "manifest": "https://github.com/p4535992/foundryvtt-playlist-import/releases/download/1.9.0/module.json",
+  "download": "https://github.com/p4535992/foundryvtt-playlist-import/releases/download/1.9.0/module.zip",
+  "readme": "https://github.com/p4535992/foundryvtt-playlist-import/blob/master/README.md",
+  "changelog": "https://github.com/p4535992/foundryvtt-playlist-import/blob/master/changelog.md",
+  "bugs": "https://github.com/p4535992/foundryvtt-playlist-import/issues",
+  "allowBugReporter": true,
+  "manifestPlusVersion": "1.2.0",
+  "relationships": {
+    "systems": [],
+    "requires": [
+      {
+        "id": "lib-wrapper",
+        "type": "module",
+        "manifest": "https://github.com/ruipin/fvtt-lib-wrapper/releases/latest/download/module.json",
+        "compatibility": {}
+      },
+      {
+        "id": "socketlib",
+        "type": "module",
+        "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/develop/module.json",
+        "compatibility": {}
+      }
+    ],
+    "conflicts": []
+  }
 }
