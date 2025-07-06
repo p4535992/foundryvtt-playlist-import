@@ -25,37 +25,49 @@ class PlaylistImporterInitializer {
     }
 
     static hookRenderPlaylistDirectory() {
-        /**
-         * Appends a button onto the playlist to import songs.
-         */
+      /**
+       * Appends a button onto the playlist to import songs.
+       */
 
-        Hooks.on("renderPlaylistDirectory", (app, html, data) => {
-            html.find(".directory-footer")[0].style.display = "inherit";
-            const importPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportButton`);
-            const importButton = $(`<button  style="width: 50%;">${importPlaylistString}</button>`);
-            if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-                html.find(".directory-footer").append(importButton);
-                importButton.on("click", (ev) => {
-                    PLIMP.playlistImporter.playlistDirectoryInterface();
-                });
+      Hooks.on("renderPlaylistDirectory", (app, html, data) => {
+        html.getElementsByClassName("directory-footer")[0].style.display = "inherit";
+
+        // ADD IMPORT ALL BUTTON
+        const importPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportButton`);
+        const importButton = document.createElement("button")
+        importButton.innerHTML = importPlaylistString
+        importButton.type = "button"
+        importButton.style = "width: 50%;"
+        if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
+          html.getElementsByClassName("directory-footer")[0].append(importButton);
+          importButton.addEventListener('click', function (event) {
+            // console.log("TEST IMPORT SOUNDS")
+            PLIMP.playlistImporter.playlistDirectoryInterface();
+          });
+        }
+
+        // ADD DELETE ALL BUTTON
+        const deleteAllPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.DeleteAllButton`);
+        const deleteAllButton = document.createElement("button")
+        deleteAllButton.innerHTML = deleteAllPlaylistString
+        deleteAllButton.type = "button"
+        deleteAllButton.style = "width: 50%;"
+        if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
+          html.getElementsByClassName("directory-footer")[0].append(deleteAllButton);
+          deleteAllButton.addEventListener('click', function (event) {
+            // console.log("TEST DELETE ALL SOUNDS")
+            const playlists = game.playlists?.contents;
+            for (const playlist of playlists) {
+              const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
+              if (playlistHasFlag && playlistHasFlag == true) {
+                playlist.delete();
+              }
             }
-            const deleteAllPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.DeleteAllButton`);
-            const deleteAllButton = $(`<button  style="width: 50%;">${deleteAllPlaylistString}</button>`);
-            if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-                html.find(".directory-footer").append(deleteAllButton);
-                deleteAllButton.on("click", async (ev) => {
-                    const playlists = game.playlists?.contents;
-                    for (const playlist of playlists) {
-                        const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
-                        if (playlistHasFlag && playlistHasFlag == true) {
-                            await playlist.delete();
-                        }
-                    }
-                });
-            }
-        });
+          });
+        }
+      });
     }
-
+    
     static _removeSound(playlistName, soundNames) {
         const currentList = game.settings.get(CONSTANTS.MODULE_NAME, "songs");
         soundNames.forEach((soundName) => {
