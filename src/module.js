@@ -292,6 +292,7 @@ class PlaylistImporter {
         return new Promise(async (resolve, reject) => {
             let playlist = game.playlists?.contents.find((p) => p.name === playlistName);
             let playlistExists = playlist ? true : false;
+            const fadeTime = game.settings?.get(CONSTANTS.MODULE_NAME, "fadeTime");
             if (playlistExists) {
                 const shouldOverridePlaylist = game.settings?.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
                 if (shouldOverridePlaylist) {
@@ -329,6 +330,7 @@ class PlaylistImporter {
                         },
                         flags: {},
                         sounds: [],
+                        fade: fadeTime,
                         mode: 0,
                         playing: false,
                     });

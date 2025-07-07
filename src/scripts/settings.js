@@ -42,6 +42,14 @@ export const registerSettings = function () {
         type: String,
         filePicker: true,
     });
+    game.settings.register(CONSTANTS.MODULE_NAME, "fadeTime", {
+        name: `${CONSTANTS.MODULE_NAME}.FadeTime`,
+        hint: `${CONSTANTS.MODULE_NAME}.FadeTimeHint`,
+        scope: "world",
+        config: true,
+        default: 0,
+        type: Number,
+    });
     game.settings.register(CONSTANTS.MODULE_NAME, "logVolume", {
         name: `${CONSTANTS.MODULE_NAME}.LogVolume`,
         hint: `${CONSTANTS.MODULE_NAME}.LogVolumeHint`,

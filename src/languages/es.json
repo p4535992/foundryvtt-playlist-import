@@ -25,6 +25,8 @@
     "playlist_import.ShouldRepeatHint": "¿Se debe activar por defecto la repetición de pistas?",
     "playlist_import.ShouldStream": "Transmisión de pistas",
     "playlist_import.ShouldStreamHint": "¿Se debe activar por defecto la transmisión de pistas?",
+    "playlist_import.FadeTime": "Establecer el tiempo de desvanecimiento predeterminado",
+    "playlist_import.FadeTimeHint": "Establecer el tiempo de desvanecimiento predeterminado en ms (1000 ms = 1 s)",
     "playlist_import.LogVolume": "Ajuste de volumen por defecto",
     "playlist_import.LogVolumeHint": "En una escala de 0.0 - 1.0",
     "playlist_import.EnableDuplicate": "Comprobación de duplicado de pistas",

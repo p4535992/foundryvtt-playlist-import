@@ -23,6 +23,8 @@
     "playlist_import.ShouldRepeatHint": "Should tracks be set to repeat by default?",
     "playlist_import.ShouldStream": "Set stream for tracks",
     "playlist_import.ShouldStreamHint": "Should tracks be set to stream by default?",
+    "playlist_import.FadeTime": "Set default fading Time",
+    "playlist_import.FadeTimeHint": "Set default Fading time in ms (1000 ms = 1 s)",
     "playlist_import.LogVolume": "Set default volume",
     "playlist_import.LogVolumeHint": "On a scale from 0.0 - 1.0",
     "playlist_import.EnableDuplicate": "Song Duplicate Checker",
