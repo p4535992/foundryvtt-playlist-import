@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "baseUrl": ".",
+        "typeRoots": [
+            "node_modules/@types",
+            "node_modules/@league-of-foundry-developers"
+        ]
+    }
+}

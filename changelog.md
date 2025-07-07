@@ -1,3 +1,6 @@
+### 13.0.0
+
+- Upgrade for fvtt13, and replace some code form jquery to vanilla javascript ty very much to @St4rwolf13 and is PR https://github.com/p4535992/foundryvtt-playlist-import/pull/16
 
 ### 1.9.0
 

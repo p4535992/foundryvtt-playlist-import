@@ -279,6 +279,7 @@
     }
   ],
   "globals": {
+    "global": true,
     "gsap": true,
     "ScrollToPlugin": true,
     "TextPlugin": true,

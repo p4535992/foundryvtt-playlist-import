@@ -31,7 +31,7 @@ jobs:
           download: https://github.com/${{github.repository}}/releases/download/${{github.event.release.tag_name}}/module.zip
 
       # Install packages.
-      - run: npm install
+      - run: npm install --force
 
       # Build distribution.
       - run: npm run build

@@ -3,19 +3,26 @@
     "tabWidth": 4,
     "overrides": [
         {
-            "files": [
-                "*.scss",
-                "*.css"
-            ],
+            "files": ["*.scss", "*.css"],
             "options": {
                 "requirePragma": false,
                 "parser": "scss"
             }
         },
         {
-            "files": [
-                "*.yml"
-            ],
+            "files": ["*.yml"],
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": ["*.json"],
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": ["*.js", "*.ts"],
             "options": {
                 "tabWidth": 2
             }
