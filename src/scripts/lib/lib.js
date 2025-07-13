@@ -102,47 +102,47 @@ import CONSTANTS from "../constants.js";
 // export let debugEnabled = 0;
 // 0 = none, warnings = 1, debug = 2, all = 3
 export function debug(msg, args = "") {
-    if (game.settings.get(CONSTANTS.MODULE_NAME, "debug")) {
-        console.log(`DEBUG | ${CONSTANTS.MODULE_NAME} | ${msg}`, args);
-    }
-    return msg;
+  if (game.settings.get(CONSTANTS.MODULE_NAME, "debug")) {
+    console.log(`DEBUG | ${CONSTANTS.MODULE_NAME} | ${msg}`, args);
+  }
+  return msg;
 }
 export function log(message) {
-    message = `${CONSTANTS.MODULE_NAME} | ${message}`;
-    console.log(message.replace("<br>", "\n"));
-    return message;
+  message = `${CONSTANTS.MODULE_NAME} | ${message}`;
+  console.log(message.replace("<br>", "\n"));
+  return message;
 }
 export function notify(message) {
-    message = `${CONSTANTS.MODULE_NAME} | ${message}`;
-    ui.notifications?.notify(message);
-    console.log(message.replace("<br>", "\n"));
-    return message;
+  message = `${CONSTANTS.MODULE_NAME} | ${message}`;
+  ui.notifications?.notify(message);
+  console.log(message.replace("<br>", "\n"));
+  return message;
 }
 export function info(info, notify = false) {
-    info = `${CONSTANTS.MODULE_NAME} | ${info}`;
-    if (notify) ui.notifications?.info(info);
-    console.log(info.replace("<br>", "\n"));
-    return info;
+  info = `${CONSTANTS.MODULE_NAME} | ${info}`;
+  if (notify) ui.notifications?.info(info);
+  console.log(info.replace("<br>", "\n"));
+  return info;
 }
 export function warn(warning, notify = false) {
-    warning = `${CONSTANTS.MODULE_NAME} | ${warning}`;
-    if (notify) ui.notifications?.warn(warning);
-    console.warn(warning.replace("<br>", "\n"));
-    return warning;
+  warning = `${CONSTANTS.MODULE_NAME} | ${warning}`;
+  if (notify) ui.notifications?.warn(warning);
+  console.warn(warning.replace("<br>", "\n"));
+  return warning;
 }
 export function error(error, notify = true) {
-    error = `${CONSTANTS.MODULE_NAME} | ${error}`;
-    if (notify) ui.notifications?.error(error);
-    return new Error(error.replace("<br>", "\n"));
+  error = `${CONSTANTS.MODULE_NAME} | ${error}`;
+  if (notify) ui.notifications?.error(error);
+  return new Error(error.replace("<br>", "\n"));
 }
 export function timelog(message) {
-    warn(Date.now(), message);
+  warn(Date.now(), message);
 }
 export const i18n = (key) => {
-    return game.i18n.localize(key)?.trim();
+  return game.i18n.localize(key)?.trim();
 };
 export const i18nFormat = (key, data = {}) => {
-    return game.i18n.format(key, data)?.trim();
+  return game.i18n.format(key, data)?.trim();
 };
 // export const setDebugLevel = (debugText: string): void => {
 //   debugEnabled = { none: 0, warn: 1, debug: 2, all: 3 }[debugText] || 0;
@@ -150,7 +150,7 @@ export const i18nFormat = (key, data = {}) => {
 //   if (debugEnabled >= 3) CONFIG.debug.hooks = true;
 // };
 export function dialogWarning(message, icon = "fas fa-exclamation-triangle") {
-    return `<p class="${CONSTANTS.MODULE_NAME}-dialog">
+  return `<p class="${CONSTANTS.MODULE_NAME}-dialog">
         <i style="font-size:3rem;" class="${icon}"></i><br><br>
         <strong style="font-size:1.2rem;">${CONSTANTS.MODULE_NAME}</strong>
         <br><br>${message}
@@ -160,70 +160,70 @@ export function dialogWarning(message, icon = "fas fa-exclamation-triangle") {
 // =====================================================
 
 export function createUploadFolderIfMissing(originFolder, uploadFolderPath) {
-    return getFolder(originFolder, uploadFolderPath)
-        .then((location) => location.target === "." && createFolder(originFolder, uploadFolderPath))
-        .catch(() => createFolder(originFolder, uploadFolderPath));
+  return getFolder(originFolder, uploadFolderPath)
+    .then((location) => location.target === "." && createFolder(originFolder, uploadFolderPath))
+    .catch(() => createFolder(originFolder, uploadFolderPath));
 }
 
 export function getFolder(source, target) {
-    return FilePicker.browse(source, target);
+  return FilePicker.browse(source, target);
 }
 
 export function createFolder(source, target, options = {}) {
-    return FilePicker.createDirectory(source, target, options);
+  return FilePicker.createDirectory(source, target, options);
 }
 
 export async function handleAudioFiles(event, files, playlistName, uploadFolderPath) {
-    const target = uploadFolderPath;
-    let sounds = [];
-    for (const file of files) {
-        let response = await FilePicker.upload("data", target, file);
-        sounds.push({ name: file.name, path: response.path });
-    }
-    let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
-    if (playlist) {
-        playlist.createEmbeddedDocuments("PlaylistSound", sounds);
-        //await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-        //await playlist?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
-    }
-    // else {
-    // 	await Playlist.create({
-    // 		name: playlistName,
-    // 		description: "Generated playlist",
-    // 		flags: {},
-    // 		sounds: sounds,
-    // 		playing: false,
-    // 	});
-    // 	//await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-    // 	//await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
-    // 	info(`Successfully created playlist: ${playlistCreated.name}`);
-    // }
+  const target = uploadFolderPath;
+  let sounds = [];
+  for (const file of files) {
+    let response = await FilePicker.upload("data", target, file);
+    sounds.push({ name: file.name, path: response.path });
+  }
+  let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
+  if (playlist) {
+    playlist.createEmbeddedDocuments("PlaylistSound", sounds);
+    //await playlist?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+    //await playlist?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
+  }
+  // else {
+  // 	await Playlist.create({
+  // 		name: playlistName,
+  // 		description: "Generated playlist",
+  // 		flags: {},
+  // 		sounds: sounds,
+  // 		playing: false,
+  // 	});
+  // 	//await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+  // 	//await playlistCreated?.setFlag(CONSTANTS.MODULE_NAME, "directoryPath", uploadFolderPath);
+  // 	info(`Successfully created playlist: ${playlistCreated.name}`);
+  // }
 }
 
 export async function playlistDirectoryPrototypeOnDropHandler(wrapped, ...args) {
-    const [event] = args;
-    event.preventDefault();
-    const files = event.dataTransfer.files;
-    log(files);
-    if (files && files.length > 0) {
-        let filteredFiles = Array.from(files).filter((file) =>
-            Object.keys(CONST.AUDIO_FILE_EXTENSIONS).includes(file.name.split(".").pop()),
-        );
-        const playlistName = event.target?.innerText?.trim() ?? "";
-        let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
-        if (playlist) {
-            const originFolder = game.settings.get(CONSTANTS.MODULE_NAME, "source");
-            const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
-            const uploadFolderPath2 = playlist.getFlag(CONSTANTS.MODULE_NAME, "directoryPath") ?? uploadFolderPath;
-            const uploadFolderPath3 = decodeURI(uploadFolderPath2);
-            await handleAudioFiles(event, filteredFiles, playlistName, uploadFolderPath3);
-        } else {
-            warn(
-                `Can't drop the song no playlist found on the drop handler.MAKE SURE TO DROP THE FILE AUDIO ON THE PLAYLIST NAME`,
-            );
-        }
+  const [event] = args;
+  event.preventDefault();
+  const files = event.dataTransfer.files;
+  log(files);
+  if (files && files.length > 0) {
+    let filteredFiles = Array.from(files).filter((file) =>
+      Object.keys(CONST.AUDIO_FILE_EXTENSIONS).includes(file.name.split(".").pop()),
+    );
+    const playlistName = event.target?.innerText?.trim() ?? "";
+    let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);
+    if (playlist) {
+      const originFolder = game.settings.get(CONSTANTS.MODULE_NAME, "source");
+      const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
+      const uploadFolderPath2 = playlist.getFlag(CONSTANTS.MODULE_NAME, "directoryPath") ?? uploadFolderPath;
+      const uploadFolderPath3 = decodeURI(uploadFolderPath2);
+      await handleAudioFiles(event, filteredFiles, playlistName, uploadFolderPath3);
     } else {
-        // originalDropFunction(event);
-        return wrapped(args);
+      warn(
+        `Can't drop the song no playlist found on the drop handler.MAKE SURE TO DROP THE FILE AUDIO ON THE PLAYLIST NAME`,
+      );
     }
+  } else {
+    // originalDropFunction(event);
+    return wrapped(args);
+  }
 }
