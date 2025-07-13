@@ -120,6 +120,7 @@ NOTE:
 - **Set repeat for tracks:** Should tracks be set to repeat by default?",
 - **Set stream for tracks:** Should tracks be set to stream by default?",
 - **Set default volume:** On a scale from 0.0 - 1.0",
+- **Set Fading Time:** Put a fading time to imported songs (in ms, default is 0)
 - **Song Duplicate Checker:** Checks during the importation process to see if duplicate songs exist, excluding them if true.",
 - **Reassign Regex:** Adjust the regex to delete unnecessary based on personal preference. This is used in the first pass to remove things like '-' '_' and leading numbers.",
 - **Override playlist:** If enabled if a playlist with the same name is founded during the import it will be override",
