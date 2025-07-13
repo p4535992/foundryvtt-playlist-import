@@ -296,6 +296,8 @@ class PlaylistImporter {
             },
             flags: {},
             sounds: [],
+            // Put this ternary because with fadeTime = 0 as default value the import crash,
+            // so we put to undefined instead
             fade: fadeTime !== 0 ? fadeTime : undefined,
             mode: 0,
             playing: false,
@@ -329,7 +331,7 @@ class PlaylistImporter {
       debug(`Invalid type logVolume`);
       return;
     }
-    logVolume = AudioHelper.inputToVolume(logVolume);
+    logVolume = foundry.audio.AudioHelper.inputToVolume(logVolume);
 
     const playlist = game.playlists?.contents.find((p) => p.name === playlistName);
 
