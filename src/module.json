@@ -2,7 +2,7 @@
   "id": "playlist_import",
   "title": "Playlist Importer",
   "description": "Speeds up the process of importing your sounds",
-  "version": "13.0.0",
+  "version": "13.0.1",
   "authors": [
     {
       "name": "Jacob McAuley"
@@ -68,8 +68,8 @@
     "maximum": 13
   },
   "url": "https://github.com/p4535992/foundryvtt-playlist-import",
-  "manifest": "https://github.com/p4535992/foundryvtt-playlist-import/releases/download/13.0.0/module.json",
-  "download": "https://github.com/p4535992/foundryvtt-playlist-import/releases/download/13.0.0/module.zip",
+  "manifest": "https://github.com/p4535992/foundryvtt-playlist-import/releases/download/13.0.1/module.json",
+  "download": "https://github.com/p4535992/foundryvtt-playlist-import/releases/download/13.0.1/module.zip",
   "readme": "https://github.com/p4535992/foundryvtt-playlist-import/blob/master/README.md",
   "changelog": "https://github.com/p4535992/foundryvtt-playlist-import/blob/master/changelog.md",
   "bugs": "https://github.com/p4535992/foundryvtt-playlist-import/issues",

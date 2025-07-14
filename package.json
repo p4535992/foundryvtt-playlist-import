@@ -2,7 +2,7 @@
 	"name": "playlist_import",
 	"title": "Playlist Importer",
 	"description": "Speeds up the process of importing your sounds",
-	"version": "13.0.0",
+	"version": "13.0.1",
   "main": "module.js",
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
