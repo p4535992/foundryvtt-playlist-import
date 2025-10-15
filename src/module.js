@@ -156,8 +156,10 @@ class PlaylistImporter {
     /*  --------------------------------------  */
     this.DEBUG = false; // Enable to see logs
   }
+
   /*  --------------------------------------  */
   /*           Helper functions               */
+
   /*  --------------------------------------  */
 
   /**
@@ -468,6 +470,7 @@ class PlaylistImporter {
 
   /*  --------------------------------------  */
   /*                 Interface                */
+
   /*  --------------------------------------  */
 
   clearMemoryInterface() {
@@ -552,6 +555,10 @@ class PlaylistImporter {
         debug(`TT: ${dirName}: ${success} on creating playlists`);
         await this._getItemsFromDir(source, dirName, playlistName, options);
 
+        if (game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders")) {
+          this._deletePlaylistIfEmpty(playlistName);
+        }
+
         for (const dirName of localDirs) {
           if (resp.target != dirName && !this._blackList.includes(dirName)) {
             finishedDirs = this._searchOnSubFolder(source, dirName, options, playlistName, finishedDirs);
@@ -593,6 +600,11 @@ class PlaylistImporter {
       const success = await this._generatePlaylist(dirNameCustom, dirName);
       if (this.DEBUG) console.log(`TT: ${dirName}: ${success} on creating playlists`);
       await this._getItemsFromDir(source, dirName, dirNameCustom, options);
+
+      if (game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders")) {
+        this._deletePlaylistIfEmpty(playlistName);
+      }
+
       // $('#finished_playlists').html(++finishedDirs);
 
       for (const dirName of localDirs) {
@@ -603,6 +615,20 @@ class PlaylistImporter {
       }
       return finishedDirs;
     });
+  }
+
+  /**
+   * Deletes a playlist if it exists and contains no sounds.
+   *
+   * @param {string} playlistName - The name of the playlist to check and potentially delete.
+   */
+
+  _deletePlaylistIfEmpty(playlistName) {
+    const playlist = game.playlists?.contents.find((p) => p.name === playlistName);
+    if (playlist && playlist.sounds.size == 0) {
+      info(`Deleting empty playlist: ${playlistName}`);
+      playlist.delete();
+    }
   }
 }
 
