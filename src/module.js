@@ -440,7 +440,7 @@ class PlaylistImporter {
       ],
       default: "ok",
       submit: (result) => {
-        console.log(result);
+        info(result);
       },
     }).render({ force: true });
   }
@@ -497,7 +497,7 @@ class PlaylistImporter {
       // Buttons result processing
       submit: (result) => {
         if (result === "clearing") {
-          console.log("Clearing imported playlists");
+          info("Clearing imported playlists");
           this._clearSongHistory();
         } else warn(`Clearing Canceled`);
       },
@@ -527,7 +527,7 @@ class PlaylistImporter {
       // Buttons result processing
       submit: (result) => {
         if (result === "import") {
-          console.log("User picked all options.");
+          info("Starting Import");
           this._playlistStatusPrompt();
           this.beginPlaylistImport(
             game.settings.get(CONSTANTS.MODULE_NAME, "source"),
