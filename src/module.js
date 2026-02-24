@@ -343,7 +343,7 @@ class PlaylistImporter {
     }
 
     return new Promise(async (resolve, reject) => {
-      FilePicker.browse(source, path, options).then(
+      foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(
         async function (resp) {
           const localFiles = resp.files;
           for (const fileName of localFiles) {
@@ -561,7 +561,7 @@ class PlaylistImporter {
       options["bucket"] = game.settings.get(CONSTANTS.MODULE_NAME, "bucket");
     }
 
-    FilePicker.browse(source, path, options).then(async (resp) => {
+    foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(async (resp) => {
       try {
         const localDirs = resp.dirs || [];
         let finishedDirs = 0;
@@ -593,7 +593,7 @@ class PlaylistImporter {
   _blackList = [];
 
   _searchOnSubFolder(source, path, options, dirNameParent, finishedDirs) {
-    FilePicker.browse(source, path, options).then(async (resp) => {
+    foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(async (resp) => {
       const localDirs = resp.dirs || [];
       // let finishedDirs = 0;
       //$('#total_playlists').html((localDirs.length));
