@@ -33,37 +33,45 @@ class PlaylistImporterInitializer {
       html.getElementsByClassName("directory-footer")[0].style.display = "inherit";
 
       // ADD IMPORT ALL BUTTON
-      const importPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportButton`);
-      const importButton = document.createElement("button");
-      importButton.innerHTML = importPlaylistString;
-      importButton.type = "button";
-      importButton.style = "width: 100%; height:auto";
-      if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-        html.getElementsByClassName("directory-footer")[0].append(importButton);
-        importButton.addEventListener("click", function (event) {
-          // console.log("TEST IMPORT SOUNDS")
-          PLIMP.playlistImporter.playlistDirectoryInterface();
-        });
+      //// check if the button already exist or not
+      if (html.getElementsByClassName(`${CONSTANTS.MODULE_NAME}ImportButton`).length == 0) {
+        const importPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportButton`);
+        const importButton = document.createElement("button");
+        importButton.className = `${CONSTANTS.MODULE_NAME}ImportButton`;
+        importButton.innerHTML = importPlaylistString;
+        importButton.type = "button";
+        importButton.style = "width: 100%; height:auto";
+        if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
+          html.getElementsByClassName("directory-footer")[0].append(importButton);
+          importButton.addEventListener("click", function (event) {
+            // console.log("TEST IMPORT SOUNDS")
+            PLIMP.playlistImporter.playlistDirectoryInterface();
+          });
+        }
       }
 
       // ADD DELETE ALL BUTTON
-      const deleteAllPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.DeleteAllButton`);
-      const deleteAllButton = document.createElement("button");
-      deleteAllButton.innerHTML = deleteAllPlaylistString;
-      deleteAllButton.type = "button";
-      deleteAllButton.style = "width: 100%; height:auto";
-      if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-        html.getElementsByClassName("directory-footer")[0].append(deleteAllButton);
-        deleteAllButton.addEventListener("click", function (event) {
-          // console.log("TEST DELETE ALL SOUNDS")
-          const playlists = game.playlists?.contents;
-          for (const playlist of playlists) {
-            const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
-            if (playlistHasFlag && playlistHasFlag == true) {
-              playlist.delete();
+      //// check if the button already exist or not
+      if (html.getElementsByClassName(`${CONSTANTS.MODULE_NAME}DeleteAllButton`).length == 0) {
+        const deleteAllPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.DeleteAllButton`);
+        const deleteAllButton = document.createElement("button");
+        deleteAllButton.className = `${CONSTANTS.MODULE_NAME}DeleteAllButton`;
+        deleteAllButton.innerHTML = deleteAllPlaylistString;
+        deleteAllButton.type = "button";
+        deleteAllButton.style = "width: 100%; height:auto";
+        if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
+          html.getElementsByClassName("directory-footer")[0].append(deleteAllButton);
+          deleteAllButton.addEventListener("click", function (event) {
+            // console.log("TEST DELETE ALL SOUNDS")
+            const playlists = game.playlists?.contents;
+            for (const playlist of playlists) {
+              const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
+              if (playlistHasFlag && playlistHasFlag == true) {
+                playlist.delete();
+              }
             }
-          }
-        });
+          });
+        }
       }
     });
   }
