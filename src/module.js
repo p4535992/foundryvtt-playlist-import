@@ -41,7 +41,7 @@ class PlaylistImporterInitializer {
       if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
         html.getElementsByClassName("directory-footer")[0].append(importButton);
         importButton.addEventListener("click", function (event) {
-          // console.log("TEST IMPORT SOUNDS")
+          debug("_____ START IMPORT SOUNDS _____");
           PLIMP.playlistImporter.playlistDirectoryInterface();
         });
       }
@@ -61,15 +61,19 @@ class PlaylistImporterInitializer {
           const taggedPlaylistFolders = playlistFolders.filter(
             (playlistFolder) => playlistFolder.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported") == true,
           );
+          debug("_____ START DELETE ALL TAGGED FOLDERS _____");
           for (const folder of taggedPlaylistFolders) {
+            debug("DELETING FOLDER : ", folder);
             folder.delete();
           }
 
           // DELETE MODULE TAGGED PLAYLISTS
           const playlists = game.playlists?.contents;
+          debug("_____ START DELETE ALL TAGGED PLAYLISTS _____");
           for (const playlist of playlists) {
             const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
             if (playlistHasFlag && playlistHasFlag == true) {
+              debug("DELETING PLAYLIST : ", playlist);
               playlist.delete();
             }
           }
@@ -199,6 +203,20 @@ class PlaylistImporter {
    */
   static _validateAudioExtension(fileExt) {
     return !!fileExt.match(/(aac|flac|m4a|mid|mp3|ogg|opus|wav|webm)+/g);
+  }
+
+  /**
+   * @name _getRandomColor
+   * @returns A random Color in hexadecimal RGB for Foundry (exemple RED = #ff0000)
+   */
+  static _getRandomColor() {
+    let result = "#";
+    const hexNumbers = "0123456789abcdef";
+    const hexLength = hexNumbers.length + 1; // for range [0, 17[ for random;
+    for (let i = 0; i < 6; i++) {
+      result += hexNumbers.charAt(Math.floor(Math.random() * hexLength));
+    }
+    return result;
   }
 
   /**
@@ -531,14 +549,19 @@ class PlaylistImporter {
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicLabel`),
           callback: () => {
             this._playlistStatusPrompt();
-            this.neoBeginPlaylistImport(
-              game.settings.get(CONSTANTS.MODULE_NAME, "source"),
-              game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
-            );
-            // this.beginPlaylistImport(
-            //   game.settings.get(CONSTANTS.MODULE_NAME, "source"),
-            //   game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
-            // );
+            if (game.settings.get(CONSTANTS.MODULE_NAME, "shouldUseNewFolderStructureCreation") == true) {
+              debug("USE NEW PLAYLIST IMPORT METHOD WITH FOLDERS STRUCTURE");
+              this.neoBeginPlaylistImport(
+                game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+                game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+              );
+            } else {
+              debug("USE BASE PLAYLIST IMPORT METHOD WITH ONLY PLAYLISTS");
+              this.beginPlaylistImport(
+                game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+                game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+              );
+            }
           },
         },
         two: {
@@ -561,29 +584,52 @@ class PlaylistImporter {
    * @param {string} path
    */
   async neoBeginPlaylistImport(source, path) {
+    // Get some PlaylistImport Module Settings
+    const dupCheck = game.settings.get(CONSTANTS.MODULE_NAME, "enableDuplicateChecking");
+    const shouldRepeat = game.settings.get(CONSTANTS.MODULE_NAME, "shouldRepeat");
+    const shouldStream = game.settings.get(CONSTANTS.MODULE_NAME, "shouldStream");
+    let logVolume = parseFloat(game.settings?.get(CONSTANTS.MODULE_NAME, "logVolume"));
+    if (isNaN(logVolume)) {
+      debug(`Invalid type logVolume`);
+      return;
+    }
+    logVolume = foundry.audio.AudioHelper.inputToVolume(logVolume);
+    debug(
+      "LISTING MODULE SETTINGS FOR FOLDER AND PLAYLISTS : ",
+      `should repeat : ${shouldRepeat}, should stream : ${shouldStream}, volume : ${logVolume}`,
+    );
+
+    /**
+     * MAIN LOOP
+     */
     var stack = [];
     stack.push(await foundry.applications.apps.FilePicker.implementation.browse(source, path));
-    console.log(stack);
-
-    // MAIN LOOP
+    debug("Stack of File Picker object : ", stack.toString());
     while (stack.length > 0) {
       var fp = stack.pop();
+
+      // GET PARENT FOLDER (if it exist)
       var currentFoundryFolder = await game.folders.getName(fp.target);
+      var parentfolderId =
+        currentFoundryFolder != undefined && currentFoundryFolder.type === "Playlist" ? currentFoundryFolder.id : null;
 
       // FOLDERS CREATION AND TAGGING
       var dirs = fp.dirs;
       for (var dir of dirs) {
         var fpDir = await foundry.applications.apps.FilePicker.implementation.browse(source, dir);
-        var newPlaylistFolder = await Folder.create({ name: dir, type: "Playlist" });
+        var newPlaylistFolder = await Folder.create({
+          name: dir,
+          type: "Playlist",
+          folder: parentfolderId,
+          color: PlaylistImporter._getRandomColor(),
+        });
         newPlaylistFolder.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+        debug(`Created folder : ${newPlaylistFolder} in folder : ${currentFoundryFolder}`);
         stack.push(await fpDir);
       }
 
       // PLAYLISTS CREATION AND TAGGING
-      //// get folder id
-      var folderId =
-        currentFoundryFolder != undefined && currentFoundryFolder.type === "Playlist" ? currentFoundryFolder.id : null;
-      var pl = await Playlist.create({ name: fp.target, folder: folderId });
+      var pl = await Playlist.create({ name: fp.target, folder: parentfolderId, mode: shouldStream ? 0 : -1 });
       await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
       var allFiles = fp.files;
       // filter to get audio files only
@@ -595,11 +641,14 @@ class PlaylistImporter {
         var soundName = PlaylistImporter._convertToUserFriendly(PlaylistImporter._getBaseName(soundFile));
         await pl.createEmbeddedDocuments(
           "PlaylistSound",
-          [{ name: soundName, path: soundFile, repeat: false, volume: 0.5 }],
+          [{ name: soundName, path: soundFile, repeat: shouldRepeat, volume: logVolume }],
           {},
         );
+        debug(`Created playlist : ${pl} in folder : ${currentFoundryFolder}`);
       }
     }
+
+    this._playlistCompletePrompt();
   }
 
   /**
