@@ -55,7 +55,17 @@ class PlaylistImporterInitializer {
       if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
         html.getElementsByClassName("directory-footer")[0].append(deleteAllButton);
         deleteAllButton.addEventListener("click", function (event) {
-          // console.log("TEST DELETE ALL SOUNDS")
+          // DELETE MODULE TAGGED FOLDERS
+          const allFolders = game.folders?.contents;
+          const playlistFolders = allFolders.filter((folder) => folder.type === "Playlist");
+          const taggedPlaylistFolders = playlistFolders.filter(
+            (playlistFolder) => playlistFolder.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported") == true,
+          );
+          for (const folder of taggedPlaylistFolders) {
+            folder.delete();
+          }
+
+          // DELETE MODULE TAGGED PLAYLISTS
           const playlists = game.playlists?.contents;
           for (const playlist of playlists) {
             const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
@@ -168,6 +178,27 @@ class PlaylistImporter {
 
   static _getBaseName(filePath) {
     return filePath.split("/").reverse()[0];
+  }
+
+  /**
+   *
+   * @param {string} fileName the name of the file, only the name (exemple a.txt) not the path
+   */
+  static _getFileExtension(fileName) {
+    var split = fileName.split(".");
+    if (split.length === 1 || (split[0] === "" && split.length === 2)) {
+      return "";
+    }
+    return split.pop();
+  }
+
+  /**
+   *
+   * @param {*} fileExt the file extension
+   * @returns true if the extension of the file is an audio one (one of the regex), else false
+   */
+  static _validateAudioExtension(fileExt) {
+    return !!fileExt.match(/(aac|flac|m4a|mid|mp3|ogg|opus|wav|webm)+/g);
   }
 
   /**
@@ -500,10 +531,14 @@ class PlaylistImporter {
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicLabel`),
           callback: () => {
             this._playlistStatusPrompt();
-            this.beginPlaylistImport(
+            this.neoBeginPlaylistImport(
               game.settings.get(CONSTANTS.MODULE_NAME, "source"),
               game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
             );
+            // this.beginPlaylistImport(
+            //   game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+            //   game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+            // );
           },
         },
         two: {
@@ -516,6 +551,55 @@ class PlaylistImporter {
       close: () => {},
     });
     playlistPrompt.render(true);
+  }
+
+  /**
+   * @name neoBeginPlaylistImport
+   * @async
+   * @description New Playlist import method for FOLDERS and PLAYLISTS creation
+   * @param {string} source
+   * @param {string} path
+   */
+  async neoBeginPlaylistImport(source, path) {
+    var stack = [];
+    stack.push(await foundry.applications.apps.FilePicker.implementation.browse(source, path));
+    console.log(stack);
+
+    // MAIN LOOP
+    while (stack.length > 0) {
+      var fp = stack.pop();
+      var currentFoundryFolder = await game.folders.getName(fp.target);
+
+      // FOLDERS CREATION AND TAGGING
+      var dirs = fp.dirs;
+      for (var dir of dirs) {
+        var fpDir = await foundry.applications.apps.FilePicker.implementation.browse(source, dir);
+        var newPlaylistFolder = await Folder.create({ name: dir, type: "Playlist" });
+        newPlaylistFolder.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+        stack.push(await fpDir);
+      }
+
+      // PLAYLISTS CREATION AND TAGGING
+      //// get folder id
+      var folderId =
+        currentFoundryFolder != undefined && currentFoundryFolder.type === "Playlist" ? currentFoundryFolder.id : null;
+      var pl = await Playlist.create({ name: fp.target, folder: folderId });
+      await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+      var allFiles = fp.files;
+      // filter to get audio files only
+      const audioFiles = allFiles.filter((file) =>
+        PlaylistImporter._validateAudioExtension(PlaylistImporter._getFileExtension(file)),
+      );
+      for (var soundFile of audioFiles) {
+        // SANITIZE SOUND NAME
+        var soundName = PlaylistImporter._convertToUserFriendly(PlaylistImporter._getBaseName(soundFile));
+        await pl.createEmbeddedDocuments(
+          "PlaylistSound",
+          [{ name: soundName, path: soundFile, repeat: false, volume: 0.5 }],
+          {},
+        );
+      }
+    }
   }
 
   /**
