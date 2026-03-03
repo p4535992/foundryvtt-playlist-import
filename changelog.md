@@ -1,3 +1,9 @@
+### 13.0.2-3 (BETA)
+
+- Bug fix: https://github.com/p4535992/foundryvtt-playlist-import/issues/18 ty to @St4rwolf13 for the PR https://github.com/p4535992/foundryvtt-playlist-import/pull/23
+- Feature: ty to  @St4rwolf13 for the PR https://github.com/p4535992/foundryvtt-playlist-import/pull/21
+- Feature: ty to MountainCat1 for the PR https://github.com/p4535992/foundryvtt-playlist-import/pull/19
+
 ### 13.0.1
 
 - Bug fix https://github.com/p4535992/foundryvtt-playlist-import/issues/12 ty to @cstby and @St4rwolf13 for the PR https://github.com/p4535992/foundryvtt-playlist-import/pull/17
