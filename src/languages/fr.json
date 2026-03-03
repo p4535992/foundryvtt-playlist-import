@@ -23,6 +23,8 @@
   "playlist_import.ShouldRepeatHint": "Souhaitez vous que les pistes audios se répète par défaut ?",
   "playlist_import.ShouldStream": "Régler le mode 'stream' pour les pistes audios",
   "playlist_import.ShouldStreamHint": "Souhaitez vous que les pistes audios s'enchaine par défaut ?",
+  "playlist_import.shouldUseNewFolderStructureCreation": "Utiliser la nouvelle méthode de création de structure de dossiers",
+  "playlist_import.shouldUseNewFolderStructureCreationHint": "Créer des dossiers contenant les playlists à la place de simplement créer des playlists",
   "playlist_import.FadeTime": "Set default fading Time",
   "playlist_import.FadeTimeHint": "Set default Fading time in ms (1000 ms = 1 s)",
   "playlist_import.LogVolume": "Régler le volume par défaut",

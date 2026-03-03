@@ -37,6 +37,8 @@
   "playlist_import.ShouldOverridePlaylistHint": "Si se habilita, al encontrar una lista con el mismo nombre, se sobrescribirá con el mismo id al importar, lo mismo ocurrirá con los sonidos",
   "playlist_import.ShouldDeletePlaylist": "Borrar lista antes de importar",
   "playlist_import.ShouldDeletePlaylistHint": "Si se habilita, si una lista tiene la etiqueta de 'módulo de importación de listas' se borrará antes de intentar una nueva importación. Es útil cuando borra algún directorio en el disco y quiere quitar las listas antiguas en el mundo. ADVERTENCIA: perderá cualquier referencia de identificación a esta lista de reproducción y sonidos.",
+  "playlist_import.shouldUseNewFolderStructureCreation": "Usar el nuevo método de creación de la estructura de directorios",
+  "playlist_import.shouldUseNewFolderStructureCreationHint": "Debería crear directorios y listas musicales (en lugar de solo listas musicales).",
   "playlist_import.MaintainOriginalFolderName": "Mantener nombre del directorio original",
   "playlist_import.MaintainOriginalFolderNameHint": "En lugar de usar el nombre por jerarquía, hará que se fuerce a crear una lista con el nombre del directorio actual, de modo que en lugar de 'padre_hijo' será simplemente 'hijo'",
   "playlist_import.SkipEmptyFolders": "Omitir carpetas vacías",

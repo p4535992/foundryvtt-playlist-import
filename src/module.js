@@ -570,22 +570,6 @@ class PlaylistImporter {
           action: "import",
           icon: "fa-regular fa-check",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicLabel`),
-          callback: () => {
-            this._playlistStatusPrompt();
-            if (game.settings.get(CONSTANTS.MODULE_NAME, "shouldUseNewFolderStructureCreation") == true) {
-              debug("USE NEW PLAYLIST IMPORT METHOD WITH FOLDERS STRUCTURE");
-              this.neoBeginPlaylistImport(
-                game.settings.get(CONSTANTS.MODULE_NAME, "source"),
-                game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
-              );
-            } else {
-              debug("USE BASE PLAYLIST IMPORT METHOD WITH ONLY PLAYLISTS");
-              this.beginPlaylistImport(
-                game.settings.get(CONSTANTS.MODULE_NAME, "source"),
-                game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
-              );
-            }
-          },
         },
         {
           // Second button to cancel
@@ -600,11 +584,24 @@ class PlaylistImporter {
         if (result === "import") {
           info("Starting Import");
           this._playlistStatusPrompt();
-          this.beginPlaylistImport(
-            game.settings.get(CONSTANTS.MODULE_NAME, "source"),
-            game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+          debug(
+            "Value of Should Use New Folder Structure Creation : ",
+            game.settings.get(CONSTANTS.MODULE_NAME, "shouldUseNewFolderStructureCreation"),
           );
-        } else warn(`import Canceled`);
+          if (game.settings.get(CONSTANTS.MODULE_NAME, "shouldUseNewFolderStructureCreation") == true) {
+            debug("USE NEW PLAYLIST IMPORT METHOD WITH FOLDERS STRUCTURE");
+            this.neoBeginPlaylistImport(
+              game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+              game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+            );
+          } else {
+            debug("USE BASE PLAYLIST IMPORT METHOD WITH ONLY PLAYLISTS");
+            this.beginPlaylistImport(
+              game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+              game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+            );
+          }
+        } else debug(`import Canceled`);
       },
     }).render({ force: true });
   }
