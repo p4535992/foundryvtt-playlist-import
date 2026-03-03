@@ -179,6 +179,7 @@ class PlaylistImporter {
     /*  --------------------------------------  */
     this.DEBUG = false; // Enable to see logs
   }
+
   /*  --------------------------------------  */
   /*           Helper functions               */
   /*  --------------------------------------  */
@@ -500,7 +501,48 @@ class PlaylistImporter {
     }).render({ force: true });
   }
 
-  _playlistStatusPrompt() {
+  _playlistStatusPromptDialog = undefined;
+  _playlistStatusPromptProgressBar = undefined;
+  /**
+   *
+   * @returns
+   */
+  async _playlistStatusPrompt() {
+    const ImportInProgressDiv = document.createElement("div");
+    const progressBar = document.createElement("progress");
+    progressBar.max = (
+      await this._CountTotalAudioFiles(
+        game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+        game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+      )
+    ).reduce((sum, acc) => sum + acc, 0);
+    progressBar.value = 400;
+    const textNode = document.createTextNode(
+      `${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressContent`)}`,
+    );
+    ImportInProgressDiv.appendChild(progressBar);
+    ImportInProgressDiv.appendChild(textNode);
+    this._playlistStatusPromptProgressBar = progressBar;
+
+    // Dialog creation when playlists importing is complete, use the DialogV2 API
+    this._playlistStatusPromptDialog = await new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressTitle`) },
+      content: ImportInProgressDiv,
+      buttons: [
+        {
+          // just a close button in case of
+          action: "close",
+          icon: "fa-regular fa-check",
+          label: "Close this prompt",
+        },
+      ],
+      default: "close",
+      submit: (result) => {
+        info(result);
+      },
+    }).render({ force: true });
+    console.log(this._playlistStatusPromptDialog);
+
     // TODO REMOVED UNTIL BETTER MANAGEMENT
     /*
 		const playlistComplete = new Dialog({
@@ -520,11 +562,72 @@ class PlaylistImporter {
 		*/
   }
 
+  _UpdatePlaylistStatusPromptProgressBar(value) {
+    this._playlistStatusPromptProgressBar.value = value;
+  }
+
+  _IncrementPlaylistStatusPromptProgressBar(value) {
+    this._playlistStatusPromptProgressBar.value += value;
+  }
+
   /**
    * A helper function designed to clear the stored history of songs
    */
   _clearSongHistory() {
     game.settings.set(CONSTANTS.MODULE_NAME, "songs", {});
+  }
+
+  /**
+   * @name _CountTotalAudioFiles
+   * @param {*} source
+   * @param {*} path
+   * @async
+   * @description A method to access and browse the folders structure to count all Folders, Playlists and Audio files, Needed for the progression prompt
+   * @returns Return an Array of 3 values
+   *  - countFolders : the number of folders to create
+   *  - countPlaylists : the number of playlists to create
+   *  - countAudioFiles : the total number of audio files to imports
+   */
+  async _CountTotalAudioFiles(source, path) {
+    /**
+     * MAIN LOOP WITH COUNTS
+     */
+    var countAudioFiles = 0;
+    var countFolders = 0;
+    var countPlaylists = 0;
+    var stack = [];
+    stack.push(await foundry.applications.apps.FilePicker.implementation.browse(source, path));
+    debug("Stack of File Picker object : ", stack.toString());
+    while (stack.length > 0) {
+      var fp = stack.pop();
+
+      // GET PARENT FOLDER (if it exist)
+      var currentFoundryFolder = await game.folders.getName(fp.target);
+      var parentfolderId =
+        currentFoundryFolder != undefined && currentFoundryFolder.type === "Playlist" ? currentFoundryFolder.id : null;
+
+      // FOLDERS CREATION AND TAGGING
+      var dirs = fp.dirs;
+      for (var dir of dirs) {
+        var fpDir = await foundry.applications.apps.FilePicker.implementation.browse(source, dir);
+        countFolders += 1;
+        stack.push(await fpDir);
+      }
+
+      // PLAYLISTS CREATION AND TAGGING
+      countPlaylists += 1;
+
+      // ADD AUDIO FILES INTO PLAYLIST
+      var allFiles = fp.files;
+      // filter to get audio files only
+      const audioFiles = allFiles.filter((file) =>
+        PlaylistImporter._validateAudioExtension(PlaylistImporter._getFileExtension(file)),
+      );
+      countAudioFiles += audioFiles.length;
+    }
+
+    debug(`COUNTS => FOLDERS : ${countFolders}, PLAYLISTS : ${countPlaylists}, AUDIO_FILES : ${countAudioFiles}`);
+    return [countFolders, countPlaylists, countAudioFiles];
   }
 
   /*  --------------------------------------  */
@@ -661,6 +764,9 @@ class PlaylistImporter {
       // PLAYLISTS CREATION AND TAGGING
       var pl = await Playlist.create({ name: fp.target, folder: parentfolderId, mode: shouldStream ? 0 : -1 });
       await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+      debug(`Created playlist : ${pl} in folder : ${currentFoundryFolder}`);
+
+      // ADD AUDIO FILES INTO PLAYLIST
       var allFiles = fp.files;
       // filter to get audio files only
       const audioFiles = allFiles.filter((file) =>
@@ -674,7 +780,7 @@ class PlaylistImporter {
           [{ name: soundName, path: soundFile, repeat: shouldRepeat, volume: logVolume }],
           {},
         );
-        debug(`Created playlist : ${pl} in folder : ${currentFoundryFolder}`);
+        debug(`Add Audio : ${soundName} in Playlist : ${pl}`);
       }
     }
 
