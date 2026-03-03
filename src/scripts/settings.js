@@ -119,6 +119,14 @@ export const registerSettings = function () {
     default: false,
     type: Boolean,
   });
+  game.settings.register(CONSTANTS.MODULE_NAME, "skipEmptyFolders", {
+    name: `${CONSTANTS.MODULE_NAME}.SkipEmptyFolders`,
+    hint: `${CONSTANTS.MODULE_NAME}.SkipEmptyFoldersHint`,
+    scope: "world",
+    config: true,
+    default: false,
+    type: Boolean,
+  });
   // ====================================================
   game.settings.register(CONSTANTS.MODULE_NAME, "debug", {
     name: `${CONSTANTS.MODULE_NAME}.setting.debug.name`,

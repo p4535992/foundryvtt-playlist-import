@@ -166,18 +166,18 @@ export function createUploadFolderIfMissing(originFolder, uploadFolderPath) {
 }
 
 export function getFolder(source, target) {
-  return FilePicker.browse(source, target);
+  return foundry.applications.apps.FilePicker.implementation.browse(source, target);
 }
 
 export function createFolder(source, target, options = {}) {
-  return FilePicker.createDirectory(source, target, options);
+  return foundry.applications.apps.FilePicker.implementation.createDirectory(source, target, options);
 }
 
 export async function handleAudioFiles(event, files, playlistName, uploadFolderPath) {
   const target = uploadFolderPath;
   let sounds = [];
   for (const file of files) {
-    let response = await FilePicker.upload("data", target, file);
+    let response = await foundry.applications.apps.FilePicker.implementation.upload("data", target, file);
     sounds.push({ name: file.name, path: response.path });
   }
   let playlist = game.playlists.contents.find((playlist) => playlist.name === playlistName);

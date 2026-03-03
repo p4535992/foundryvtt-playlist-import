@@ -9,6 +9,7 @@ import {
   playlistDirectoryPrototypeOnDropHandler,
   createUploadFolderIfMissing,
 } from "./scripts/lib/lib.js";
+import { icon } from "@fortawesome/fontawesome-svg-core";
 
 let PLIMP = {};
 
@@ -33,51 +34,57 @@ class PlaylistImporterInitializer {
       html.getElementsByClassName("directory-footer")[0].style.display = "inherit";
 
       // ADD IMPORT ALL BUTTON
-      const importPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportButton`);
-      const importButton = document.createElement("button");
-      importButton.innerHTML = importPlaylistString;
-      importButton.type = "button";
-      importButton.style = "width: 100%; height:auto";
-      if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-        html.getElementsByClassName("directory-footer")[0].append(importButton);
-        importButton.addEventListener("click", function (event) {
-          debug("_____ START IMPORT SOUNDS _____");
-          PLIMP.playlistImporter.playlistDirectoryInterface();
-        });
+      if (html.getElementsByClassName(`${CONSTANTS.MODULE_NAME}ImportButton`).length == 0) {
+        const importPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportButton`);
+        const importButton = document.createElement("button");
+        importButton.className = `${CONSTANTS.MODULE_NAME}ImportButton`;
+        importButton.innerHTML = importPlaylistString;
+        importButton.type = "button";
+        importButton.style = "width: 100%; height:auto";
+        if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
+          html.getElementsByClassName("directory-footer")[0].append(importButton);
+          importButton.addEventListener("click", function (event) {
+            debug("_____ START IMPORT SOUNDS _____");
+            PLIMP.playlistImporter.playlistDirectoryInterface();
+          });
+        }
       }
 
       // ADD DELETE ALL BUTTON
-      const deleteAllPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.DeleteAllButton`);
-      const deleteAllButton = document.createElement("button");
-      deleteAllButton.innerHTML = deleteAllPlaylistString;
-      deleteAllButton.type = "button";
-      deleteAllButton.style = "width: 100%; height:auto";
-      if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-        html.getElementsByClassName("directory-footer")[0].append(deleteAllButton);
-        deleteAllButton.addEventListener("click", function (event) {
-          // DELETE MODULE TAGGED FOLDERS
-          const allFolders = game.folders?.contents;
-          const playlistFolders = allFolders.filter((folder) => folder.type === "Playlist");
-          const taggedPlaylistFolders = playlistFolders.filter(
-            (playlistFolder) => playlistFolder.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported") == true,
-          );
-          debug("_____ START DELETE ALL TAGGED FOLDERS _____");
-          for (const folder of taggedPlaylistFolders) {
-            debug("DELETING FOLDER : ", folder);
-            folder.delete();
-          }
-
-          // DELETE MODULE TAGGED PLAYLISTS
-          const playlists = game.playlists?.contents;
-          debug("_____ START DELETE ALL TAGGED PLAYLISTS _____");
-          for (const playlist of playlists) {
-            const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
-            if (playlistHasFlag && playlistHasFlag == true) {
-              debug("DELETING PLAYLIST : ", playlist);
-              playlist.delete();
+      if (html.getElementsByClassName(`${CONSTANTS.MODULE_NAME}DeleteAllButton`).length == 0) {
+        const deleteAllPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.DeleteAllButton`);
+        const deleteAllButton = document.createElement("button");
+        deleteAllButton.className = `${CONSTANTS.MODULE_NAME}DeleteAllButton`;
+        deleteAllButton.innerHTML = deleteAllPlaylistString;
+        deleteAllButton.type = "button";
+        deleteAllButton.style = "width: 100%; height:auto";
+        if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
+          html.getElementsByClassName("directory-footer")[0].append(deleteAllButton);
+          deleteAllButton.addEventListener("click", function (event) {
+            // DELETE MODULE TAGGED FOLDERS
+            const allFolders = game.folders?.contents;
+            const playlistFolders = allFolders.filter((folder) => folder.type === "Playlist");
+            const taggedPlaylistFolders = playlistFolders.filter(
+              (playlistFolder) => playlistFolder.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported") == true,
+            );
+            debug("_____ START DELETE ALL TAGGED FOLDERS _____");
+            for (const folder of taggedPlaylistFolders) {
+              debug("DELETING FOLDER : ", folder);
+              folder.delete();
             }
-          }
-        });
+
+            // DELETE MODULE TAGGED PLAYLISTS
+            const playlists = game.playlists?.contents;
+            debug("_____ START DELETE ALL TAGGED PLAYLISTS _____");
+            for (const playlist of playlists) {
+              const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
+              if (playlistHasFlag && playlistHasFlag == true) {
+                debug("DELETING PLAYLIST : ", playlist);
+                playlist.delete();
+              }
+            }
+          });
+        }
       }
     });
   }
@@ -123,13 +130,15 @@ class PlaylistImporterInitializer {
      */
     Hooks.on("renderSettings", (app, html) => {
       const clearMemoryString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemory`);
-      const importButton = $(`<button>${clearMemoryString}</button>`);
-      // For posterity.
+      var importButton = document.createElement("button");
+      var importButtonText = document.createTextNode(clearMemoryString);
+      importButton.appendChild(importButtonText);
+      importButton.addEventListener("click", function () {
+        PLIMP.playlistImporter.clearMemoryInterface();
+      });
+
       if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-        html.find("button[data-action='players']").after(importButton);
-        importButton.click((ev) => {
-          PLIMP.playlistImporter.clearMemoryInterface();
-        });
+        html.getElementsByClassName("settings flexcol")[0].appendChild(importButton);
       }
     });
   }
@@ -389,7 +398,7 @@ class PlaylistImporter {
     }
 
     return new Promise(async (resolve, reject) => {
-      FilePicker.browse(source, path, options).then(
+      foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(
         async function (resp) {
           const localFiles = resp.files;
           for (const fileName of localFiles) {
@@ -472,20 +481,23 @@ class PlaylistImporter {
    * A helper function designed to prompt the player of task completion.
    */
   _playlistCompletePrompt() {
-    const playlistComplete = new Dialog({
-      title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.OperationFinishTitle`),
+    // Dialog creation when playlists importing is complete, use the DialogV2 API
+    new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.OperationFinishTitle`) },
       content: `<p>${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.OperationFinishContent`)}</p>`,
-      buttons: {
-        one: {
-          icon: '<i class="fas fa-check"></i>',
-          label: "",
-          callback: () => {},
+      buttons: [
+        {
+          // just an OK button
+          action: "ok",
+          icon: "fa-regular fa-check",
+          label: "Ok",
         },
+      ],
+      default: "ok",
+      submit: (result) => {
+        info(result);
       },
-      default: "Ack",
-      close: () => {},
-    });
-    playlistComplete.render(true);
+    }).render({ force: true });
   }
 
   _playlistStatusPrompt() {
@@ -520,32 +532,43 @@ class PlaylistImporter {
   /*  --------------------------------------  */
 
   clearMemoryInterface() {
-    const clearMemoryPrompt = new Dialog({
-      title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryTitle`),
+    // Dialog creation when clearing imported playlists, use the DialogV2 API
+    new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryTitle`) },
       content: `<p>${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryDescription`)}</p>`,
-      buttons: {
-        one: {
+      buttons: [
+        {
+          // First Button to validate the imports clearing
+          action: "clearing",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryWarning`),
-          callback: () => this._clearSongHistory(),
         },
-        two: {
+        {
+          // Second button to cancel
+          action: "cancel",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.CancelOperation`),
-          callback: () => warn(`Canceled`),
         },
+      ],
+      default: "cancel",
+      // Buttons result processing
+      submit: (result) => {
+        if (result === "clearing") {
+          info("Clearing imported playlists");
+          this._clearSongHistory();
+        } else warn(`Clearing Canceled`);
       },
-      default: "Cancel",
-      close: () => warn(`Prompt Closed`),
-    });
-    clearMemoryPrompt.render(true);
+    }).render({ force: true });
   }
 
   playlistDirectoryInterface() {
-    const playlistPrompt = new Dialog({
-      title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicTitle`),
+    // Dialog creation to validate the import, use the DialogV2 API
+    new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicTitle`) },
       content: `<p>${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicDescription`)}</p>`,
-      buttons: {
-        one: {
-          icon: '<i class="fas fa-check"></i>',
+      buttons: [
+        {
+          // First Button to validate the mass import
+          action: "import",
+          icon: "fa-regular fa-check",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicLabel`),
           callback: () => {
             this._playlistStatusPrompt();
@@ -564,16 +587,26 @@ class PlaylistImporter {
             }
           },
         },
-        two: {
-          icon: '<i class="fas fa-times"></i>',
+        {
+          // Second button to cancel
+          action: "cancel",
+          icon: "fa-regular fa-x",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.CancelOperation`),
-          callback: () => warn(`Canceled`),
         },
+      ],
+      default: "cancel",
+      // Buttons result processing
+      submit: (result) => {
+        if (result === "import") {
+          info("Starting Import");
+          this._playlistStatusPrompt();
+          this.beginPlaylistImport(
+            game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+            game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+          );
+        } else warn(`import Canceled`);
       },
-      default: "Cancel",
-      close: () => {},
-    });
-    playlistPrompt.render(true);
+    }).render({ force: true });
   }
 
   /**
@@ -674,7 +707,7 @@ class PlaylistImporter {
       options["bucket"] = game.settings.get(CONSTANTS.MODULE_NAME, "bucket");
     }
 
-    FilePicker.browse(source, path, options).then(async (resp) => {
+    foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(async (resp) => {
       try {
         const localDirs = resp.dirs || [];
         let finishedDirs = 0;
@@ -684,6 +717,10 @@ class PlaylistImporter {
         const success = await this._generatePlaylist(playlistName, dirName);
         debug(`TT: ${dirName}: ${success} on creating playlists`);
         await this._getItemsFromDir(source, dirName, playlistName, options);
+
+        if (game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders")) {
+          this._deletePlaylistIfEmpty(playlistName);
+        }
 
         for (const dirName of localDirs) {
           if (resp.target != dirName && !this._blackList.includes(dirName)) {
@@ -706,7 +743,7 @@ class PlaylistImporter {
   _blackList = [];
 
   _searchOnSubFolder(source, path, options, dirNameParent, finishedDirs) {
-    FilePicker.browse(source, path, options).then(async (resp) => {
+    foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(async (resp) => {
       const localDirs = resp.dirs || [];
       // let finishedDirs = 0;
       //$('#total_playlists').html((localDirs.length));
@@ -726,6 +763,11 @@ class PlaylistImporter {
       const success = await this._generatePlaylist(dirNameCustom, dirName);
       if (this.DEBUG) console.log(`TT: ${dirName}: ${success} on creating playlists`);
       await this._getItemsFromDir(source, dirName, dirNameCustom, options);
+
+      if (game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders")) {
+        this._deletePlaylistIfEmpty(playlistName);
+      }
+
       // $('#finished_playlists').html(++finishedDirs);
 
       for (const dirName of localDirs) {
@@ -736,6 +778,20 @@ class PlaylistImporter {
       }
       return finishedDirs;
     });
+  }
+
+  /**
+   * Deletes a playlist if it exists and contains no sounds.
+   *
+   * @param {string} playlistName - The name of the playlist to check and potentially delete.
+   */
+
+  _deletePlaylistIfEmpty(playlistName) {
+    const playlist = game.playlists?.contents.find((p) => p.name === playlistName);
+    if (playlist && playlist.sounds.size == 0) {
+      info(`Deleting empty playlist: ${playlistName}`);
+      playlist.delete();
+    }
   }
 }
 
