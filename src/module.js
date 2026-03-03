@@ -9,6 +9,7 @@ import {
   playlistDirectoryPrototypeOnDropHandler,
   createUploadFolderIfMissing,
 } from "./scripts/lib/lib.js";
+import { icon } from "@fortawesome/fontawesome-svg-core";
 
 let PLIMP = {};
 
@@ -109,13 +110,15 @@ class PlaylistImporterInitializer {
      */
     Hooks.on("renderSettings", (app, html) => {
       const clearMemoryString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemory`);
-      const importButton = $(`<button>${clearMemoryString}</button>`);
-      // For posterity.
+      var importButton = document.createElement("button");
+      var importButtonText = document.createTextNode(clearMemoryString);
+      importButton.appendChild(importButtonText);
+      importButton.addEventListener("click", function () {
+        PLIMP.playlistImporter.clearMemoryInterface();
+      });
+
       if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
-        html.find("button[data-action='players']").after(importButton);
-        importButton.click((ev) => {
-          PLIMP.playlistImporter.clearMemoryInterface();
-        });
+        html.getElementsByClassName("settings flexcol")[0].appendChild(importButton);
       }
     });
   }
@@ -340,7 +343,7 @@ class PlaylistImporter {
     }
 
     return new Promise(async (resolve, reject) => {
-      FilePicker.browse(source, path, options).then(
+      foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(
         async function (resp) {
           const localFiles = resp.files;
           for (const fileName of localFiles) {
@@ -423,20 +426,23 @@ class PlaylistImporter {
    * A helper function designed to prompt the player of task completion.
    */
   _playlistCompletePrompt() {
-    const playlistComplete = new Dialog({
-      title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.OperationFinishTitle`),
+    // Dialog creation when playlists importing is complete, use the DialogV2 API
+    new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.OperationFinishTitle`) },
       content: `<p>${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.OperationFinishContent`)}</p>`,
-      buttons: {
-        one: {
-          icon: '<i class="fas fa-check"></i>',
-          label: "",
-          callback: () => {},
+      buttons: [
+        {
+          // just an OK button
+          action: "ok",
+          icon: "fa-regular fa-check",
+          label: "Ok",
         },
+      ],
+      default: "ok",
+      submit: (result) => {
+        info(result);
       },
-      default: "Ack",
-      close: () => {},
-    });
-    playlistComplete.render(true);
+    }).render({ force: true });
   }
 
   _playlistStatusPrompt() {
@@ -471,51 +477,65 @@ class PlaylistImporter {
   /*  --------------------------------------  */
 
   clearMemoryInterface() {
-    const clearMemoryPrompt = new Dialog({
-      title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryTitle`),
+    // Dialog creation when clearing imported playlists, use the DialogV2 API
+    new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryTitle`) },
       content: `<p>${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryDescription`)}</p>`,
-      buttons: {
-        one: {
+      buttons: [
+        {
+          // First Button to validate the imports clearing
+          action: "clearing",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ClearMemoryWarning`),
-          callback: () => this._clearSongHistory(),
         },
-        two: {
+        {
+          // Second button to cancel
+          action: "cancel",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.CancelOperation`),
-          callback: () => warn(`Canceled`),
         },
+      ],
+      default: "cancel",
+      // Buttons result processing
+      submit: (result) => {
+        if (result === "clearing") {
+          info("Clearing imported playlists");
+          this._clearSongHistory();
+        } else warn(`Clearing Canceled`);
       },
-      default: "Cancel",
-      close: () => warn(`Prompt Closed`),
-    });
-    clearMemoryPrompt.render(true);
+    }).render({ force: true });
   }
 
   playlistDirectoryInterface() {
-    const playlistPrompt = new Dialog({
-      title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicTitle`),
+    // Dialog creation to validate the import, use the DialogV2 API
+    new foundry.applications.api.DialogV2({
+      window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicTitle`) },
       content: `<p>${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicDescription`)}</p>`,
-      buttons: {
-        one: {
-          icon: '<i class="fas fa-check"></i>',
+      buttons: [
+        {
+          // First Button to validate the mass import
+          action: "import",
+          icon: "fa-regular fa-check",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportMusicLabel`),
-          callback: () => {
-            this._playlistStatusPrompt();
-            this.beginPlaylistImport(
-              game.settings.get(CONSTANTS.MODULE_NAME, "source"),
-              game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
-            );
-          },
         },
-        two: {
-          icon: '<i class="fas fa-times"></i>',
+        {
+          // Second button to cancel
+          action: "cancel",
+          icon: "fa-regular fa-x",
           label: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.CancelOperation`),
-          callback: () => warn(`Canceled`),
         },
+      ],
+      default: "cancel",
+      // Buttons result processing
+      submit: (result) => {
+        if (result === "import") {
+          info("Starting Import");
+          this._playlistStatusPrompt();
+          this.beginPlaylistImport(
+            game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+            game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+          );
+        } else warn(`import Canceled`);
       },
-      default: "Cancel",
-      close: () => {},
-    });
-    playlistPrompt.render(true);
+    }).render({ force: true });
   }
 
   /**
@@ -541,7 +561,7 @@ class PlaylistImporter {
       options["bucket"] = game.settings.get(CONSTANTS.MODULE_NAME, "bucket");
     }
 
-    FilePicker.browse(source, path, options).then(async (resp) => {
+    foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(async (resp) => {
       try {
         const localDirs = resp.dirs || [];
         let finishedDirs = 0;
@@ -577,7 +597,7 @@ class PlaylistImporter {
   _blackList = [];
 
   _searchOnSubFolder(source, path, options, dirNameParent, finishedDirs) {
-    FilePicker.browse(source, path, options).then(async (resp) => {
+    foundry.applications.apps.FilePicker.implementation.browse(source, path, options).then(async (resp) => {
       const localDirs = resp.dirs || [];
       // let finishedDirs = 0;
       //$('#total_playlists').html((localDirs.length));
