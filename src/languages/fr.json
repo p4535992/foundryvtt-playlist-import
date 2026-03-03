@@ -37,6 +37,8 @@
   "playlist_import.ShouldDeletePlaylistHint": "If enabled if a playlist has the flag of the 'playlist import module' it will be deleted before try the new import. This is useful for when you delete some folder on the disk and want to remove the old playlist on the game. WARNING: You will lose any id reference to these playlist and sounds.",
   "playlist_import.MaintainOriginalFolderName": "Maintain original folder name",
   "playlist_import.MaintainOriginalFolderNameHint": "Instead using the hierarchy naming this setting will force to create a playlist with the name of the current folder so instead 'parent_child' will be 'child'",
+  "playlist_import.SkipEmptyFolders": "Ignorer les dossiers vides",
+  "playlist_import.SkipEmptyFoldersHint": "Si un dossier ne contient aucun fichier audio, il sera ignoré et ne sera pas importé en tant que liste de lecture vide",
   "playlist_import.setting.reset.name": "Remettre les réglages par défaut",
   "playlist_import.setting.reset.label": "Remettre les réglages par défaut",
   "playlist_import.setting.reset.hint": "Cela va remettre a par défaut tous les réglages du système de jeux",

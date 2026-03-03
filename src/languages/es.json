@@ -39,6 +39,8 @@
   "playlist_import.ShouldDeletePlaylistHint": "Si se habilita, si una lista tiene la etiqueta de 'módulo de importación de listas' se borrará antes de intentar una nueva importación. Es útil cuando borra algún directorio en el disco y quiere quitar las listas antiguas en el mundo. ADVERTENCIA: perderá cualquier referencia de identificación a esta lista de reproducción y sonidos.",
   "playlist_import.MaintainOriginalFolderName": "Mantener nombre del directorio original",
   "playlist_import.MaintainOriginalFolderNameHint": "En lugar de usar el nombre por jerarquía, hará que se fuerce a crear una lista con el nombre del directorio actual, de modo que en lugar de 'padre_hijo' será simplemente 'hijo'",
+  "playlist_import.SkipEmptyFolders": "Omitir carpetas vacías",
+  "playlist_import.SkipEmptyFoldersHint": "Si una carpeta no contiene ningún archivo de audio, se omitirá y no se importará como una lista de reproducción vacía",
   "playlist_import.setting.reset.name": "Reiniciar ajustes",
   "playlist_import.setting.reset.label": "Volver a los valores por defecto",
   "playlist_import.setting.reset.hint": "Se reiniciarán todos los ajustes de vuelta a los valores por defecto del sistema activo",
