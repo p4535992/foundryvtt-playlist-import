@@ -501,33 +501,44 @@ class PlaylistImporter {
     }).render({ force: true });
   }
 
-  _playlistStatusPromptDialog = undefined;
-  _playlistStatusPromptProgressBar = undefined;
   /**
    *
    * @returns
    */
   async _playlistStatusPrompt() {
-    const ImportInProgressDiv = document.createElement("div");
+    const importInProgressDiv = document.createElement("div");
     const progressBar = document.createElement("progress");
-    progressBar.max = (
-      await this._CountTotalAudioFiles(
-        game.settings.get(CONSTANTS.MODULE_NAME, "source"),
-        game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
-      )
-    ).reduce((sum, acc) => sum + acc, 0);
-    progressBar.value = 400;
-    const textNode = document.createTextNode(
+
+    // get the count of elements to import/create
+    var counts = await this._countTotalAudioFiles(
+      game.settings.get(CONSTANTS.MODULE_NAME, "source"),
+      game.settings.get(CONSTANTS.MODULE_NAME, "folderDir"),
+    );
+
+    // the progress bar Maximum is the sum of all the elements (folders, playlists...) to create and import
+    var total = counts.reduce((sum, acc) => sum + acc, 0);
+    progressBar.max = total;
+    progressBar.value = 0;
+
+    // Text Nodes and append sub elements to the div
+    const contentTextNode = document.createTextNode(
       `${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressContent`)}`,
     );
-    ImportInProgressDiv.appendChild(progressBar);
-    ImportInProgressDiv.appendChild(textNode);
-    this._playlistStatusPromptProgressBar = progressBar;
+    const counterparagraph = document.createElement("P");
+    const countersTextNode = document.createTextNode(
+      `0 / ${counts[0]} ${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressFolders`)}
+      | 0 / ${counts[1]} ${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressPlaylists`)}
+      | 0 / ${counts[2]} ${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressAudioFiles`)}`,
+    );
+    importInProgressDiv.appendChild(contentTextNode);
+    importInProgressDiv.appendChild(progressBar);
+    counterparagraph.appendChild(countersTextNode);
+    importInProgressDiv.appendChild(counterparagraph);
 
     // Dialog creation when playlists importing is complete, use the DialogV2 API
-    this._playlistStatusPromptDialog = await new foundry.applications.api.DialogV2({
+    const progressDialog = await new foundry.applications.api.DialogV2({
       window: { title: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressTitle`) },
-      content: ImportInProgressDiv,
+      content: importInProgressDiv,
       buttons: [
         {
           // just a close button in case of
@@ -541,33 +552,53 @@ class PlaylistImporter {
         info(result);
       },
     }).render({ force: true });
-    console.log(this._playlistStatusPromptDialog);
 
-    // TODO REMOVED UNTIL BETTER MANAGEMENT
-    /*
-		const playlistComplete = new Dialog({
-			title: "Status Update",
-			content: `<p>Number of playlists completed <span id="finished_playlists">0</span>/<span id="total_playlists">0</span></p>`,
-			buttons: {
-				one: {
-					icon: '<i class="fas fa-check"></i>',
-					label: "",
-					callback: () => {},
-				},
-			},
-			default: "Ack",
-			close: () => {},
-		});
-		playlistComplete.render(true);
-		*/
+    return {
+      progressDialog: progressDialog,
+      progressMaxNumberOfFolders: counts[0],
+      progressMaxNumberOfPlaylists: counts[1],
+      progressMaxNumberOfAudioFiles: counts[2],
+      progressNumberOfFolders: 0,
+      progressNumberOfPlaylists: 0,
+      progressNumberOfAudioFiles: 0,
+    };
   }
 
-  _UpdatePlaylistStatusPromptProgressBar(value) {
-    this._playlistStatusPromptProgressBar.value = value;
-  }
+  /**
+   * @summary Update paragraph and progressBar dom object in the progress prompt meanwhile import
+   * @param {*} progressPromptObject a big object that contain a lot of info (all counter and maximum values) + the Dialog object to access the progress bar and others...
+   * @param {*} folderIncrement of how much to increment the folders count
+   * @param {*} playlistIncrement of how much to increment the playlists count
+   * @param {*} audioFileIncrement of how much to increment the audiofiles count
+   */
+  _incrementPlaylistStatusPromptProgressBar(
+    progressPromptObject,
+    folderIncrement = 0,
+    playlistIncrement = 0,
+    audioFileIncrement = 0,
+  ) {
+    progressPromptObject.progressNumberOfFolders += folderIncrement;
+    progressPromptObject.progressNumberOfPlaylists += playlistIncrement;
+    progressPromptObject.progressNumberOfAudioFiles += audioFileIncrement;
 
-  _IncrementPlaylistStatusPromptProgressBar(value) {
-    this._playlistStatusPromptProgressBar.value += value;
+    debug(`progress bar update progressDialog.element : ${progressPromptObject.progressDialog.element}`);
+    if (progressPromptObject.progressDialog.element != null) {
+      var progressBar = progressPromptObject.progressDialog.element.querySelector("progress");
+      if (progressBar != undefined && progressBar != null) {
+        progressBar.value += folderIncrement + playlistIncrement + audioFileIncrement;
+      }
+      var pCounters = progressPromptObject.progressDialog.element.querySelector("p");
+      if (pCounters != undefined && pCounters != null) {
+        pCounters.innerHTML = `${progressPromptObject.progressNumberOfFolders} / ${progressPromptObject.progressMaxNumberOfFolders} ${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressFolders`)}
+        | ${progressPromptObject.progressNumberOfPlaylists} / ${progressPromptObject.progressMaxNumberOfPlaylists} ${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressPlaylists`)}
+        | ${progressPromptObject.progressNumberOfAudioFiles} / ${progressPromptObject.progressMaxNumberOfAudioFiles} ${game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportInProgressAudioFiles`)}`;
+      }
+
+      // If progress bar complete then we close the prompt
+      if (progressBar.value == progressBar.max) {
+        progressPromptObject.progressDialog.close();
+      }
+    }
   }
 
   /**
@@ -578,7 +609,7 @@ class PlaylistImporter {
   }
 
   /**
-   * @name _CountTotalAudioFiles
+   * @name _countTotalAudioFiles
    * @param {*} source
    * @param {*} path
    * @async
@@ -588,7 +619,7 @@ class PlaylistImporter {
    *  - countPlaylists : the number of playlists to create
    *  - countAudioFiles : the total number of audio files to imports
    */
-  async _CountTotalAudioFiles(source, path) {
+  async _countTotalAudioFiles(source, path) {
     /**
      * MAIN LOOP WITH COUNTS
      */
@@ -686,7 +717,6 @@ class PlaylistImporter {
       submit: (result) => {
         if (result === "import") {
           info("Starting Import");
-          this._playlistStatusPrompt();
           debug(
             "Value of Should Use New Folder Structure Creation : ",
             game.settings.get(CONSTANTS.MODULE_NAME, "shouldUseNewFolderStructureCreation"),
@@ -717,6 +747,11 @@ class PlaylistImporter {
    * @param {string} path
    */
   async neoBeginPlaylistImport(source, path) {
+    // Init the progress prompt that contain the progress bar during import
+    // This object will be update with the _incrementPlaylistStatusPromptProgressBar method at important steps
+    var progressPromptObject = await this._playlistStatusPrompt();
+    debug(`the progress prompt big object : ${progressPromptObject}`);
+
     // Get some PlaylistImport Module Settings
     const dupCheck = game.settings.get(CONSTANTS.MODULE_NAME, "enableDuplicateChecking");
     const shouldRepeat = game.settings.get(CONSTANTS.MODULE_NAME, "shouldRepeat");
@@ -758,6 +793,7 @@ class PlaylistImporter {
         });
         newPlaylistFolder.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
         debug(`Created folder : ${newPlaylistFolder} in folder : ${currentFoundryFolder}`);
+        this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 1, 0, 0);
         stack.push(await fpDir);
       }
 
@@ -765,6 +801,7 @@ class PlaylistImporter {
       var pl = await Playlist.create({ name: fp.target, folder: parentfolderId, mode: shouldStream ? 0 : -1 });
       await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
       debug(`Created playlist : ${pl} in folder : ${currentFoundryFolder}`);
+      this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 0, 1, 0);
 
       // ADD AUDIO FILES INTO PLAYLIST
       var allFiles = fp.files;
@@ -781,6 +818,7 @@ class PlaylistImporter {
           {},
         );
         debug(`Add Audio : ${soundName} in Playlist : ${pl}`);
+        this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 0, 0, 1);
       }
     }
 
