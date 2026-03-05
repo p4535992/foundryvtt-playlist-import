@@ -61,28 +61,7 @@ class PlaylistImporterInitializer {
         if (game.user?.isGM || game.user?.can("SETTINGS_MODIFY")) {
           html.getElementsByClassName("directory-footer")[0].append(deleteAllButton);
           deleteAllButton.addEventListener("click", function (event) {
-            // DELETE MODULE TAGGED FOLDERS
-            const allFolders = game.folders?.contents;
-            const playlistFolders = allFolders.filter((folder) => folder.type === "Playlist");
-            const taggedPlaylistFolders = playlistFolders.filter(
-              (playlistFolder) => playlistFolder.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported") == true,
-            );
-            debug("_____ START DELETE ALL TAGGED FOLDERS _____");
-            for (const folder of taggedPlaylistFolders) {
-              debug("DELETING FOLDER : ", folder);
-              folder.delete();
-            }
-
-            // DELETE MODULE TAGGED PLAYLISTS
-            const playlists = game.playlists?.contents;
-            debug("_____ START DELETE ALL TAGGED PLAYLISTS _____");
-            for (const playlist of playlists) {
-              const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
-              if (playlistHasFlag && playlistHasFlag == true) {
-                debug("DELETING PLAYLIST : ", playlist);
-                playlist.delete();
-              }
-            }
+            PLIMP.playlistImporter._deleteAllPlaylistsAndFolders();
           });
         }
       }
@@ -620,6 +599,10 @@ class PlaylistImporter {
    *  - countAudioFiles : the total number of audio files to imports
    */
   async _countTotalAudioFiles(source, path) {
+    // get some module setting, mainly skipEmptyFolders to set the counts rights
+    const skipEmptyFolders = game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders");
+    debug(`Setting skipEmptyFolders value : ${skipEmptyFolders}`);
+
     /**
      * MAIN LOOP WITH COUNTS
      */
@@ -641,6 +624,19 @@ class PlaylistImporter {
       var dirs = fp.dirs;
       for (var dir of dirs) {
         var fpDir = await foundry.applications.apps.FilePicker.implementation.browse(source, dir);
+
+        // check if the directory is empty and skipEmptyFolders setting value to know if we skip it
+        if (
+          skipEmptyFolders == true &&
+          fpDir.dirs.length == 0 &&
+          fpDir.files.filter((file) =>
+            PlaylistImporter._validateAudioExtension(PlaylistImporter._getFileExtension(file)),
+          ).length == 0
+        ) {
+          debug(`Folder ${dir} is Skipped because empty`);
+          continue;
+        }
+
         countFolders += 1;
         stack.push(await fpDir);
       }
@@ -659,6 +655,31 @@ class PlaylistImporter {
 
     debug(`COUNTS => FOLDERS : ${countFolders}, PLAYLISTS : ${countPlaylists}, AUDIO_FILES : ${countAudioFiles}`);
     return [countFolders, countPlaylists, countAudioFiles];
+  }
+
+  _deleteAllPlaylistsAndFolders() {
+    // DELETE MODULE TAGGED FOLDERS
+    const allFolders = game.folders?.contents;
+    const playlistFolders = allFolders.filter((folder) => folder.type === "Playlist");
+    const taggedPlaylistFolders = playlistFolders.filter(
+      (playlistFolder) => playlistFolder.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported") == true,
+    );
+    debug("_____ START DELETE ALL TAGGED FOLDERS _____");
+    for (const folder of taggedPlaylistFolders) {
+      debug("DELETING FOLDER : ", folder);
+      folder.delete();
+    }
+
+    // DELETE MODULE TAGGED PLAYLISTS
+    const playlists = game.playlists?.contents;
+    debug("_____ START DELETE ALL TAGGED PLAYLISTS _____");
+    for (const playlist of playlists) {
+      const playlistHasFlag = playlist.getFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported");
+      if (playlistHasFlag && playlistHasFlag == true) {
+        debug("DELETING PLAYLIST : ", playlist);
+        playlist.delete();
+      }
+    }
   }
 
   /*  --------------------------------------  */
@@ -716,6 +737,15 @@ class PlaylistImporter {
       // Buttons result processing
       submit: (result) => {
         if (result === "import") {
+          // If shouldDeletePlaylist Setting is set, we delete all before re-importing
+          debug(
+            `Is ShouldDeletePlaylist setting set : ${game.settings.get(CONSTANTS.MODULE_NAME, "shouldDeletePlaylist")}`,
+          );
+          if (game.settings.get(CONSTANTS.MODULE_NAME, "shouldDeletePlaylist") == true) {
+            debug("Delete All before re-importing");
+            this._deleteAllPlaylistsAndFolders();
+          }
+
           info("Starting Import");
           debug(
             "Value of Should Use New Folder Structure Creation : ",
@@ -753,6 +783,8 @@ class PlaylistImporter {
     debug(`the progress prompt big object : ${progressPromptObject}`);
 
     // Get some PlaylistImport Module Settings
+    const skipEmptyFolders = game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders");
+    debug(`Setting skipEmptyFolders value : ${skipEmptyFolders}`);
     const dupCheck = game.settings.get(CONSTANTS.MODULE_NAME, "enableDuplicateChecking");
     const shouldRepeat = game.settings.get(CONSTANTS.MODULE_NAME, "shouldRepeat");
     const shouldStream = game.settings.get(CONSTANTS.MODULE_NAME, "shouldStream");
@@ -785,6 +817,19 @@ class PlaylistImporter {
       var dirs = fp.dirs;
       for (var dir of dirs) {
         var fpDir = await foundry.applications.apps.FilePicker.implementation.browse(source, dir);
+
+        // check if the directory is empty and skipEmptyFolders setting value to know if we skip it
+        if (
+          skipEmptyFolders == true &&
+          fpDir.dirs.length == 0 &&
+          fpDir.files.filter((file) =>
+            PlaylistImporter._validateAudioExtension(PlaylistImporter._getFileExtension(file)),
+          ).length == 0
+        ) {
+          debug(`Folder ${dir} is Skipped because empty`);
+          continue;
+        }
+
         var newPlaylistFolder = await Folder.create({
           name: dir,
           type: "Playlist",
