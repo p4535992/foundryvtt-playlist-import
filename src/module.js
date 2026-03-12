@@ -786,6 +786,7 @@ class PlaylistImporter {
     const skipEmptyFolders = game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders");
     debug(`Setting skipEmptyFolders value : ${skipEmptyFolders}`);
     const dupCheck = game.settings.get(CONSTANTS.MODULE_NAME, "enableDuplicateChecking");
+    const shouldOverride = game.settings.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
     const shouldRepeat = game.settings.get(CONSTANTS.MODULE_NAME, "shouldRepeat");
     const shouldStream = game.settings.get(CONSTANTS.MODULE_NAME, "shouldStream");
     let logVolume = parseFloat(game.settings?.get(CONSTANTS.MODULE_NAME, "logVolume"));
@@ -796,7 +797,7 @@ class PlaylistImporter {
     logVolume = foundry.audio.AudioHelper.inputToVolume(logVolume);
     debug(
       "LISTING MODULE SETTINGS FOR FOLDER AND PLAYLISTS : ",
-      `should repeat : ${shouldRepeat}, should stream : ${shouldStream}, volume : ${logVolume}`,
+      `enable duplicate : ${dupCheck}, should overwrite ${shouldOverride}, should repeat : ${shouldRepeat}, should stream : ${shouldStream}, volume : ${logVolume}`,
     );
 
     /**
@@ -818,7 +819,7 @@ class PlaylistImporter {
       for (var dir of dirs) {
         var fpDir = await foundry.applications.apps.FilePicker.implementation.browse(source, dir);
 
-        // check if the directory is empty and skipEmptyFolders setting value to know if we skip it
+        //// check if the directory is empty and skipEmptyFolders setting value to know if we skip it
         if (
           skipEmptyFolders == true &&
           fpDir.dirs.length == 0 &&
@@ -830,6 +831,7 @@ class PlaylistImporter {
           continue;
         }
 
+        //// Folder creation part
         var newPlaylistFolder = await Folder.create({
           name: dir,
           type: "Playlist",
@@ -837,32 +839,47 @@ class PlaylistImporter {
           color: PlaylistImporter._getRandomColor(),
         });
         newPlaylistFolder.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-        debug(`Created folder : ${newPlaylistFolder} in folder : ${currentFoundryFolder}`);
+        debug(`Created folder : ${newPlaylistFolder.name} in folder : ${currentFoundryFolder.name}`);
         this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 1, 0, 0);
         stack.push(await fpDir);
       }
 
       // PLAYLISTS CREATION AND TAGGING
-      var pl = await Playlist.create({ name: fp.target, folder: parentfolderId, mode: shouldStream ? 0 : -1 });
-      await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-      debug(`Created playlist : ${pl} in folder : ${currentFoundryFolder}`);
+      //// check if the playlist already exist and ShouldOvveride setting
+      var pl = game.playlists.getName(fp.target);
+      if (shouldOverride == true && pl != undefined) {
+        ////// the playlist already exist, we skip the creation and will update it instead
+        debug(`Playlist : ${pl} in folder : ${currentFoundryFolder.name} already exist, we override it instead`);
+      } else {
+        pl = await Playlist.create({ name: fp.target, folder: parentfolderId, mode: shouldStream ? 0 : -1 });
+        await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+        debug(`Created playlist : ${pl} in folder : ${currentFoundryFolder.name}`);
+      }
+
       this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 0, 1, 0);
 
       // ADD AUDIO FILES INTO PLAYLIST
       var allFiles = fp.files;
-      // filter to get audio files only
+      //// filter to get audio files only
       const audioFiles = allFiles.filter((file) =>
         PlaylistImporter._validateAudioExtension(PlaylistImporter._getFileExtension(file)),
       );
       for (var soundFile of audioFiles) {
-        // SANITIZE SOUND NAME
+        ////// SANITIZE SOUND NAME
         var soundName = PlaylistImporter._convertToUserFriendly(PlaylistImporter._getBaseName(soundFile));
-        await pl.createEmbeddedDocuments(
-          "PlaylistSound",
-          [{ name: soundName, path: soundFile, repeat: shouldRepeat, volume: logVolume }],
-          {},
-        );
-        debug(`Add Audio : ${soundName} in Playlist : ${pl}`);
+
+        ////// Check if the sound already exist in the playlist and enableduplicate setting
+        if (dupCheck == true && pl.collections.sounds.getName(soundName) != undefined) {
+          debug(`Audio ${soundName} already exist in the playlist ${pl.name}, we skip this it`);
+        } else {
+          await pl.createEmbeddedDocuments(
+            "PlaylistSound",
+            [{ name: soundName, path: soundFile, repeat: shouldRepeat, volume: logVolume }],
+            {},
+          );
+          debug(`Add Audio : ${soundName} in Playlist : ${pl.name}`);
+        }
+
         this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 0, 0, 1);
       }
     }
