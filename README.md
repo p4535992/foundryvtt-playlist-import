@@ -126,6 +126,7 @@ NOTE:
 - **Override playlist:** If enabled if a playlist with the same name is founded during the import it will be override",
 - **Delete playlist before import:** If enabled if a playlist has the flag of the 'playlist import module' it will be deleted before try the new import. This is useful for when you delete some folder on the disk and want to remove the old playlist on the game.",
 - **Maintain original folder name:** Instead using the hierarchy naming this setting will force to create a playlist with the name of the current folder so instead 'parent_child' will be 'child'"
+- **Use the new folder structure creation method :** This setting if enable change the import method and use the new "neoBeginPlaylistImport" import method that use a progress bar in a prompt and replicate the directory structure, creating foundryVTT folders and playlists instead of only playlists
 
 ### Attributions
 
@@ -151,6 +152,33 @@ As such here is the plotted time complexity graph for up to 525 songs added at a
 Note, because we've assumed that checking if a file exists  is constant time, the running time is still approx O(N) as the operation to add scales off the number of files.
 
 Additionally, you times should be faster! To test this, file operations were run on an old HDD approx ~6 years old. This likely means that you should experience better times. 
+
+### The new import method
+
+The new import method "neoBeginPlaylistImport" work like this :
+- first it get all the module settings in variables for later uses
+- Then it initialize a FILO (first in, last out) stack by adding the setted "Base music directory" first
+- then it start the main import loop, it pop an element (dad folder) from the stack and "work" on it
+  - It make the child folders of the dad folder, and put them in the stack as well for recursivity
+  - make the playlist for the dad folder (let call it dad playlist)
+  - import all audio files in the dad playlist
+
+It also do a lot of other work in the main loop such as :
+- tagging folders and playlists so we can delete only what the module imported
+- creating and updating the progress bar prompt
+- checking for duplicates, skipping empty folders, filtering to import only audio files, sanitize audio names...
+
+#### For the progress bar prompt
+
+Here some explain on how the progress bar work :
+all the creation is on the **"_playlistStatusPrompt"** method
+- first it count with the helper method **"_countTotalAudioFiles"** all folders, playlists and audio files in the directories structure
+- Then it create all DOM elements (the texts, the progress bar, a div that contain all)
+- Make the FoundryVTT Dialog that will be the popup/prompt
+- Finally return a big JS Object that contain all elements to update the progress bar in the prompt (the totals, the current values and the FoundryVtt Dialog object)
+
+And for updating this big object we use another method that we call in the import loop **"_incrementPlaylistStatusPromptProgressBar"**, we pass the big object **"_playlistStatusPrompt"** return to us and the increment we want to add to our counters and the method will update the values and the text of our progress Dialog/prompt.
+
 
 ## Known issue
 
