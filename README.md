@@ -85,6 +85,8 @@ NOTE:
 8. Select "Begin Import" to wait for imports to finish.
 9. A prompt will appear confirming task completion, confirm, and enjoy the music!
 
+![Loading](wiki/imgs/loading.gif)
+
 ### Example Structure 
 
 ```
@@ -110,6 +112,20 @@ NOTE:
     |     |        |----> just_kidding.mp4
     
 ```
+
+```
+// > BASE ARCHITECTURE <
+MUSIQUE 
+|-- 1.mp3 
+|-- 2.mp3
+|-- 3.mp3
+|-- FA
+|   |-- FA1.mp3
+|   |-- FA2.mp3
+|-- FB
+|   |-- FBA
+|       |-- FBA1.mp3
+|-- FC (empty folder)
 
 ## Settings
 

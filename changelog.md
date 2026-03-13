@@ -1,3 +1,8 @@
+### 13.0.4
+
+- Feature: Remake Import feature for full Architecture import (with FoundryVTT Folders) ty to @St4rwolf13 for the PR https://github.com/p4535992/foundryvtt-playlist-import/pull/22
+- Bug fix: https://github.com/p4535992/foundryvtt-playlist-import/issues/14  ty to @St4rwolf13 for the PR https://github.com/p4535992/foundryvtt-playlist-import/pull/22
+
 ### 13.0.2-3 (BETA)
 
 - Bug fix: https://github.com/p4535992/foundryvtt-playlist-import/issues/18 ty to @St4rwolf13 for the PR https://github.com/p4535992/foundryvtt-playlist-import/pull/23
