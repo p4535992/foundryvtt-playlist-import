@@ -33,6 +33,14 @@ export const registerSettings = function () {
     default: false,
     type: Boolean,
   });
+  game.settings.register(CONSTANTS.MODULE_NAME, "shouldUseNewFolderStructureCreation", {
+    name: `${CONSTANTS.MODULE_NAME}.shouldUseNewFolderStructureCreation`,
+    hint: `${CONSTANTS.MODULE_NAME}.shouldUseNewFolderStructureCreationHint`,
+    scope: "world",
+    config: true,
+    default: true,
+    type: Boolean,
+  });
   game.settings.register(CONSTANTS.MODULE_NAME, "folderDir", {
     name: `${CONSTANTS.MODULE_NAME}.FolderDir`,
     hint: `${CONSTANTS.MODULE_NAME}.FolderDirHint`,
