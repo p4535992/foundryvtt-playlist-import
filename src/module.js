@@ -1098,9 +1098,10 @@ class PlaylistImporter {
 
   async _DropImportAudioFiles(targetType, targettedFolderName, targettedPlaylistName, audioFiles) {
     // BUILD UPLOAD PATH
-    const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
-    const uploadFolderPath2 = uploadFolderPath;
-    const uploadFolderPath3 = decodeURI(uploadFolderPath2);
+    var source = game.settings.get(CONSTANTS.MODULE_NAME, "source");
+    var rootDir = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
+    var folderDir = targettedFolderName;
+    debug(`source : ${source}, root dir : ${rootDir}, folder dir : ${folderDir}`);
 
     // Get some PlaylistImport Module Settings
     const skipEmptyFolders = game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders");
@@ -1141,6 +1142,9 @@ class PlaylistImporter {
       await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
       debug(`Created playlist : ${pl} in folder ${targettedFolderName}`);
       targettedImportPlaylist = pl;
+
+      rootDir = rootDir + "/" + folderDir;
+      await createUploadFolderIfMissing(source, rootDir);
     } else if (targetType === "PLAYLIST") {
       //// We put the audios files in that playlist
       targettedImportPlaylist = game.playlists.getName(targettedPlaylistName);
@@ -1150,8 +1154,8 @@ class PlaylistImporter {
     var sounds = [];
     for (const audioFile of audioFiles) {
       let response = await foundry.applications.apps.FilePicker.implementation.upload(
-        "data",
-        "CAMPAGNES_AUDIOS",
+        source,
+        rootDir,
         audioFile,
         {},
         { notify: true },
