@@ -1143,6 +1143,7 @@ class PlaylistImporter {
       debug(`Created playlist : ${pl} in folder ${targettedFolderName}`);
       targettedImportPlaylist = pl;
 
+      //// Folder creation on system if it does not exist to better manage audio files
       rootDir = rootDir + "/" + folderDir;
       await createUploadFolderIfMissing(source, rootDir);
     } else if (targetType === "PLAYLIST") {
@@ -1151,6 +1152,7 @@ class PlaylistImporter {
       debug(`Audio Files drag and drop imported in playlist ${targettedPlaylistName}`);
     }
 
+    // UPLOAD PART
     var sounds = [];
     for (const audioFile of audioFiles) {
       let response = await foundry.applications.apps.FilePicker.implementation.upload(
@@ -1160,11 +1162,10 @@ class PlaylistImporter {
         {},
         { notify: true },
       );
-      sounds.push({ name: audioFile.name, path: response.path });
+      var soundName = PlaylistImporter._convertToUserFriendly(PlaylistImporter._getBaseName(audioFile.name));
+      sounds.push({ name: soundName, path: response.path, repeat: shouldRepeat, volume: logVolume });
     }
     targettedImportPlaylist.createEmbeddedDocuments("PlaylistSound", sounds);
-
-    //let response = await foundry.applications.apps.FilePicker.implementation.upload("data", target, file);
   }
 }
 
