@@ -37,7 +37,7 @@ class PlaylistImporterInitializer {
       if (html.getElementsByClassName(`${CONSTANTS.MODULE_NAME}ImportButton`).length == 0) {
         const importPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.ImportButton`);
         const importButton = document.createElement("button");
-        importButton.className = `${CONSTANTS.MODULE_NAME}ImportButton`;
+        importButton.className += ` ${CONSTANTS.MODULE_NAME}ImportButton`;
         importButton.innerHTML = importPlaylistString;
         importButton.type = "button";
         importButton.style = "width: 100%; height:auto";
@@ -54,7 +54,7 @@ class PlaylistImporterInitializer {
       if (html.getElementsByClassName(`${CONSTANTS.MODULE_NAME}DeleteAllButton`).length == 0) {
         const deleteAllPlaylistString = game.i18n.localize(`${CONSTANTS.MODULE_NAME}.DeleteAllButton`);
         const deleteAllButton = document.createElement("button");
-        deleteAllButton.className = `${CONSTANTS.MODULE_NAME}DeleteAllButton`;
+        deleteAllButton.className += ` ${CONSTANTS.MODULE_NAME}DeleteAllButton`;
         deleteAllButton.innerHTML = deleteAllPlaylistString;
         deleteAllButton.type = "button";
         deleteAllButton.style = "width: 100%; height:auto";
@@ -64,6 +64,101 @@ class PlaylistImporterInitializer {
             PLIMP.playlistImporter._deleteAllPlaylistsAndFolders();
           });
         }
+      }
+
+      // ADD DROP INTERACTION TO PLAYLISTS TAB
+      var directoriesList = html.getElementsByClassName("directory-list plain")[0];
+      if (
+        directoriesList == undefined ||
+        directoriesList.className.search(`${CONSTANTS.MODULE_NAME}DirectoryList`) == -1
+      ) {
+        directoriesList.className += ` ${CONSTANTS.MODULE_NAME}DirectoryList`;
+        console.log(directoriesList);
+        directoriesList.addEventListener("drop", (evt) => {
+          debug("DROP EVENT on playlist tab directories list part");
+          console.log(evt);
+
+          // We take the list of dropped files
+          var droppedFiles = evt.dataTransfer.files;
+          if (droppedFiles.length == 0 && droppedFiles == undefined) {
+            return;
+          }
+
+          // We take the drop target to know where to put the files
+          var dropTarget = evt.target;
+          //// we must choose an adapted behaviours depending of the drop target (if the file is drop on a playlist, a folder, on the plain)
+          // var targetType =
+          var targetType = null;
+          var targettedFolderName = null;
+          var targettedPlaylistName = null;
+          console.log(dropTarget);
+          console.log(dropTarget.className);
+          console.log(dropTarget.nodeName);
+
+          var className = dropTarget.className;
+          var nodeName = dropTarget.nodeName;
+
+          var folderString = "FOLDER";
+          var playlistString = "PLAYLIST";
+          var plainString = "PLAIN";
+
+          // FOLDER
+          if (className === "folder-name ellipsis") {
+            targetType = folderString;
+            targettedFolderName = dropTarget.innerText;
+          }
+          if (className === "folder-header") {
+            targetType = folderString;
+            targettedFolderName = dropTarget.outerText;
+          }
+
+          // PLAYLIST
+          if (className === "entry-name playlist-name ellipsis") {
+            targetType = playlistString;
+            targettedPlaylistName = game.playlists.get(dropTarget.offsetParent.dataset.entryId).name;
+          }
+          if (className === "playlist-header") {
+            targetType = playlistString;
+            targettedPlaylistName = game.playlists.get(dropTarget.offsetParent.dataset.entryId).name;
+          }
+          if (className === "ellipsis" && nodeName === "LABEL") {
+            targetType = playlistString;
+            targettedPlaylistName = game.playlists.get(dropTarget.offsetParent.dataset.entryId).name;
+          }
+          if (className === "playlist-sounds plain") {
+            targetType = playlistString;
+            targettedPlaylistName = game.playlists.get(dropTarget.offsetParent.dataset.entryId).name;
+          }
+
+          // PLAIN
+          if (className === "directory-list plain playlist_importDirectoryList") {
+            targetType = plainString;
+            targettedPlaylistName = "Dropped_Audios";
+          }
+
+          // Failsafe, if the type is not found, we consider it a drop on the plain
+          if (targetType == null) {
+            targetType = plainString;
+          }
+          debug(
+            `Target type is : ${targetType}, targeted folder is : ${targettedFolderName}, targeted playlist is : ${targettedPlaylistName}`,
+          );
+
+          // filter to get audio files only, cannot use filter on FileList class
+          var audioFiles = [];
+          for (var file of droppedFiles) {
+            if (PlaylistImporter._validateAudioExtension(PlaylistImporter._getFileExtension(file.name))) {
+              audioFiles.push(file);
+            }
+          }
+
+          PLIMP.playlistImporter._DropImportAudioFiles(
+            targetType,
+            targettedFolderName,
+            targettedPlaylistName,
+            audioFiles,
+          );
+        });
       }
     });
   }
@@ -129,13 +224,12 @@ class PlaylistImporterInitializer {
       // createUploadFolderIfMissing(originFolder, uploadFolderPath)
       // 	.then(() => log(`Folder ${uploadFolderPath} is ready.`))
       // 	.catch(() => log(`User doesn't have permission to create the upload folder ${uploadFolderPath}.`));
-
-      libWrapper.register(
-        CONSTANTS.MODULE_NAME,
-        "PlaylistDirectory.prototype._onDrop",
-        playlistDirectoryPrototypeOnDropHandler,
-        "MIXED",
-      );
+      // libWrapper.register(
+      //   CONSTANTS.MODULE_NAME,
+      //   "PlaylistDirectory.prototype._onDrop",
+      //   playlistDirectoryPrototypeOnDropHandler,
+      //   "MIXED",
+      // );
     });
   }
 
@@ -839,7 +933,9 @@ class PlaylistImporter {
           color: PlaylistImporter._getRandomColor(),
         });
         newPlaylistFolder.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-        debug(`Created folder : ${newPlaylistFolder.name} in folder : ${currentFoundryFolder.name}`);
+        debug(
+          `Created folder : ${newPlaylistFolder.name} in folder : ${currentFoundryFolder != undefined ? currentFoundryFolder.name : "root"}`,
+        );
         this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 1, 0, 0);
         stack.push(await fpDir);
       }
@@ -849,11 +945,15 @@ class PlaylistImporter {
       var pl = game.playlists.getName(fp.target);
       if (shouldOverride == true && pl != undefined) {
         ////// the playlist already exist, we skip the creation and will update it instead
-        debug(`Playlist : ${pl} in folder : ${currentFoundryFolder.name} already exist, we override it instead`);
+        debug(
+          `Playlist : ${pl} in folder : ${currentFoundryFolder != undefined ? currentFoundryFolder.name : "root"} already exist, we override it instead`,
+        );
       } else {
         pl = await Playlist.create({ name: fp.target, folder: parentfolderId, mode: shouldStream ? 0 : -1 });
         await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
-        debug(`Created playlist : ${pl} in folder : ${currentFoundryFolder.name}`);
+        debug(
+          `Created playlist : ${pl} in folder : ${currentFoundryFolder != undefined ? currentFoundryFolder.name : "root"}`,
+        );
       }
 
       this._incrementPlaylistStatusPromptProgressBar(progressPromptObject, 0, 1, 0);
@@ -995,6 +1095,45 @@ class PlaylistImporter {
       info(`Deleting empty playlist: ${playlistName}`);
       playlist.delete();
     }
+  }
+
+  async _DropImportAudioFiles(targetType, targettedFolderName, targettedPlaylistName, audioFiles) {
+    // BUILD UPLOAD PATH
+    const uploadFolderPath = game.settings.get(CONSTANTS.MODULE_NAME, "folderDir");
+    const uploadFolderPath2 = uploadFolderPath;
+    const uploadFolderPath3 = decodeURI(uploadFolderPath2);
+
+    // Get some PlaylistImport Module Settings
+    const skipEmptyFolders = game.settings.get(CONSTANTS.MODULE_NAME, "skipEmptyFolders");
+    debug(`Setting skipEmptyFolders value : ${skipEmptyFolders}`);
+    const dupCheck = game.settings.get(CONSTANTS.MODULE_NAME, "enableDuplicateChecking");
+    const shouldOverride = game.settings.get(CONSTANTS.MODULE_NAME, "shouldOverridePlaylist");
+    const shouldRepeat = game.settings.get(CONSTANTS.MODULE_NAME, "shouldRepeat");
+    const shouldStream = game.settings.get(CONSTANTS.MODULE_NAME, "shouldStream");
+    let logVolume = parseFloat(game.settings?.get(CONSTANTS.MODULE_NAME, "logVolume"));
+    if (isNaN(logVolume)) {
+      debug(`Invalid type logVolume`);
+      return;
+    }
+    logVolume = foundry.audio.AudioHelper.inputToVolume(logVolume);
+    debug(
+      "LISTING MODULE SETTINGS FOR FOLDER AND PLAYLISTS : ",
+      `enable duplicate : ${dupCheck}, should overwrite ${shouldOverride}, should repeat : ${shouldRepeat}, should stream : ${shouldStream}, volume : ${logVolume}`,
+    );
+
+    // SELECT BEHAVIORS depending of target (FOLDER, PLAIN, PLAYLIST)
+    if (targetType === "PLAIN") {
+      //// We create the Playlist and put the audios files in it
+      var pl = await Playlist.create({ name: targettedPlaylistName, mode: shouldStream ? 0 : -1 });
+      await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+      debug(`Created playlist : ${pl}`);
+    } else if (targetType === "FOLDER") {
+      //// we create a playlist in the folder and put the audios files in it
+    } else if (targetType === "PLAYLIST") {
+      //// We put the audios files in that playlist
+    }
+
+    //let response = await foundry.applications.apps.FilePicker.implementation.upload("data", target, file);
   }
 }
 
