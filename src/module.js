@@ -133,7 +133,6 @@ class PlaylistImporterInitializer {
           // PLAIN
           if (className === "directory-list plain playlist_importDirectoryList") {
             targetType = plainString;
-            targettedPlaylistName = "Dropped_Audios";
           }
 
           // Failsafe, if the type is not found, we consider it a drop on the plain
@@ -1122,16 +1121,44 @@ class PlaylistImporter {
     );
 
     // SELECT BEHAVIORS depending of target (FOLDER, PLAIN, PLAYLIST)
+    var targettedImportPlaylist = null;
     if (targetType === "PLAIN") {
       //// We create the Playlist and put the audios files in it
+      targettedPlaylistName = "Dropped_Audios";
       var pl = await Playlist.create({ name: targettedPlaylistName, mode: shouldStream ? 0 : -1 });
       await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
       debug(`Created playlist : ${pl}`);
+      targettedImportPlaylist = pl;
     } else if (targetType === "FOLDER") {
       //// we create a playlist in the folder and put the audios files in it
+      var targettedFolderId = game.folders.getName(targettedFolderName).id;
+      targettedPlaylistName = "Dropped_Audios";
+      var pl = await Playlist.create({
+        name: targettedPlaylistName,
+        folder: targettedFolderId,
+        mode: shouldStream ? 0 : -1,
+      });
+      await pl.setFlag(CONSTANTS.MODULE_NAME, "isPlaylistImported", true);
+      debug(`Created playlist : ${pl} in folder ${targettedFolderName}`);
+      targettedImportPlaylist = pl;
     } else if (targetType === "PLAYLIST") {
       //// We put the audios files in that playlist
+      targettedImportPlaylist = game.playlists.getName(targettedPlaylistName);
+      debug(`Audio Files drag and drop imported in playlist ${targettedPlaylistName}`);
     }
+
+    var sounds = [];
+    for (const audioFile of audioFiles) {
+      let response = await foundry.applications.apps.FilePicker.implementation.upload(
+        "data",
+        "CAMPAGNES_AUDIOS",
+        audioFile,
+        {},
+        { notify: true },
+      );
+      sounds.push({ name: audioFile.name, path: response.path });
+    }
+    targettedImportPlaylist.createEmbeddedDocuments("PlaylistSound", sounds);
 
     //let response = await foundry.applications.apps.FilePicker.implementation.upload("data", target, file);
   }
