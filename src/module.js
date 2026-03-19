@@ -151,6 +151,7 @@ class PlaylistImporterInitializer {
             }
           }
 
+          // The main upload and import method for dropping audio files
           PLIMP.playlistImporter._DropImportAudioFiles(
             targetType,
             targettedFolderName,
@@ -1096,6 +1097,14 @@ class PlaylistImporter {
     }
   }
 
+  /**
+   *
+   * @param {*} targetType The type of target between [PLAIN, FOLDER, PLAYLIST], will serve to define what behaviours to apply
+   * @param {*} targettedFolderName  the targetted folder on which the files were dropped
+   * @param {*} targettedPlaylistName the targetted playlist on which the files were dropped
+   * @param {*} audioFiles the audio files to upload to foundryVtt server and import
+   * @returns
+   */
   async _DropImportAudioFiles(targetType, targettedFolderName, targettedPlaylistName, audioFiles) {
     // BUILD UPLOAD PATH
     var source = game.settings.get(CONSTANTS.MODULE_NAME, "source");
@@ -1146,6 +1155,7 @@ class PlaylistImporter {
       //// Folder creation on system if it does not exist to better manage audio files
       rootDir = rootDir + "/" + folderDir;
       await createUploadFolderIfMissing(source, rootDir);
+      debug(`Folder : ${targettedFolderName} was created on the FoundryVTT system at ${source + "/" + rootDir}`);
     } else if (targetType === "PLAYLIST") {
       //// We put the audios files in that playlist
       targettedImportPlaylist = game.playlists.getName(targettedPlaylistName);
@@ -1163,6 +1173,7 @@ class PlaylistImporter {
         { notify: true },
       );
       var soundName = PlaylistImporter._convertToUserFriendly(PlaylistImporter._getBaseName(audioFile.name));
+      debug(`Audio file : ${soundName} was drop uploaded to foundryVTT server path : ${source + "/" + rootDir}`);
       sounds.push({ name: soundName, path: response.path, repeat: shouldRepeat, volume: logVolume });
     }
     targettedImportPlaylist.createEmbeddedDocuments("PlaylistSound", sounds);
