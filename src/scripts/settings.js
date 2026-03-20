@@ -48,7 +48,7 @@ export const registerSettings = function () {
     config: true,
     default: "music",
     type: String,
-    filePicker: true,
+    filePicker: "folder",
   });
   game.settings.register(CONSTANTS.MODULE_NAME, "fadeTime", {
     name: `${CONSTANTS.MODULE_NAME}.FadeTime`,
