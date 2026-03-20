@@ -90,8 +90,10 @@ export const registerSettings = function () {
     default: true,
     type: Boolean,
   });
-  // let sources = new FilePicker().sources;
-  // let options = Object.keys(sources);
+
+  // Based on FoundryVTT API https://foundryvtt.com/api/classes/foundry.applications.apps.FilePicker.html#sources
+  // Source is more of the type of source that give data, the values can be only ["data", "public", "s3"]
+  // So, use doc https://foundryvtt.com/api/classes/foundry.helpers.ClientSettings.html#register to make a select choice instead of File Picker
   game.settings.register(CONSTANTS.MODULE_NAME, "source", {
     name: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSource`),
     hint: game.i18n.localize(`${CONSTANTS.MODULE_NAME}.SelectSourceHint`),
@@ -101,7 +103,14 @@ export const registerSettings = function () {
     default: "data",
     type: String,
     // https://foundryvtt.wiki/en/development/api/settings
-    filePicker: "folder",
+    choices: {
+      data: "data",
+      public: "public",
+      s3: "s3",
+    },
+    onChange: (value) => {
+      console.log(`DEBUG | ${CONSTANTS.MODULE_NAME} | Source setting value set to : ${value}`);
+    },
   });
   game.settings.register(CONSTANTS.MODULE_NAME, "shouldDeletePlaylist", {
     name: `${CONSTANTS.MODULE_NAME}.ShouldDeletePlaylist`,
