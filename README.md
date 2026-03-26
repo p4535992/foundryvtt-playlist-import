@@ -126,6 +126,7 @@ MUSIQUE
 |   |-- FBA
 |       |-- FBA1.mp3
 |-- FC (empty folder)
+```
 
 ## Settings
 
@@ -194,6 +195,66 @@ all the creation is on the **"_playlistStatusPrompt"** method
 - Finally return a big JS Object that contain all elements to update the progress bar in the prompt (the totals, the current values and the FoundryVtt Dialog object)
 
 And for updating this big object we use another method that we call in the import loop **"_incrementPlaylistStatusPromptProgressBar"**, we pass the big object **"_playlistStatusPrompt"** return to us and the increment we want to add to our counters and the method will update the values and the text of our progress Dialog/prompt.
+
+### Drag and Drop
+
+This module have a **DROP** feature (as in Drag&Drop, you drag audio files and drop them) for audio files on the in game AUDIO tab of FoundryVTT
+three behaviours exist for now
+
+**PLAIN**, **FOLDER** and **PLAYLIST** the behaviours is chosen depending on where you **DROP** the audio files
+
+a good explanation with image is explained here : [drag and drop issue](https://github.com/p4535992/foundryvtt-playlist-import/issues/7)
+
+for **PLAIN** :
+
+- If you drag and drop audio files into The "Plain" of the foundryVTT audio tab
+  - It will create a new "Dropped_Audios" playlist and import the files into it (quite simple)
+  - it will upload the audio files into the configured folder set in the module settings
+
+for **FOLDER** :
+
+- If you drop the audio files on a folder
+  - It will create again a new "Dropped_Audios" playlist in this specific folder and import the audio files in this created playlist
+  - it will also create the directory into the foundryVTT server system and upload the audio files inside for better management
+
+for **PLAYLIST** :
+
+- If you drag the audio files and drop them on a already existing playlist
+  - It will import the audio files into this specific playlist
+  - it will upload the audio files into the configured folder set in the module settings
+
+#### for the technical side of the Drop
+
+it start on the hook for when the PLAYLIST/AUDIO tab appear on the in game screen
+linked to this method : `hookRenderPlaylistDirectory`
+
+the first step is to add the `event listener`
+[website for a quick tuto on event listener](https://www.w3schools.com/js/js_htmldom_eventlistener.asp)
+
+to the `directoriesList` DOM Element, on the in game screen, it represent the big space in the TAB where are displayed all the playlists and audios
+when this `directoriesList` Element receive a `drop` event we act.
+
+come the difficult part, we parse all the elements that can be put inside this `directoriesList` father element
+theres a lot of other DOM Element (text, div...) all theses element are different depending on if there is a Folder, or a playlists or an audio files...
+
+so I parsed a lot manually with experimentation and the debug/dev mode of my navigator...
+
+the two things we must receive from that big parsing and engineering are :
+
+- The `targetType` which tell us if user DROP the files on a playlist, on the plain father element or a folder element, this element will tell us which behaviours to adopt / what to do next on the code.
+- And the name of which Playlist of Folder (`targettedPlaylistName` / `targettedFolderName`) the user DROP the files on, this element will be used to know on which playlist/folder we must import the audio files and I got theses element by experimenting a lot too.
+
+once this big step passed we can pass all the informations into another function that will manage the import and upload of the audio files.
+the `_DropImportAudioFiles` of the `PLIMP` object.
+
+we pass :
+
+- the `targetType`
+- the `targettedFolderName`
+- the `targettedPlaylistName`
+- and the `audioFiles`
+
+and now on the `_DropImportAudioFiles` method, we use same brick of code to adapt our behaviours based on the `targetType`, based of what said before on the drag and drop part of the document, we take a lot of infos and variables from the settings, then we create some folder or playlist, create a directory on the system for the folder part, and at last we can launch the upload of the audio files and then Import them once on the server.
 
 
 ## Known issue
