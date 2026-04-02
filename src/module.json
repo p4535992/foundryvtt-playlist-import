@@ -72,8 +72,8 @@
   "styles": [],
   "compatibility": {
     "minimum": 13,
-    "verified": 13,
-    "maximum": 13
+    "verified": 14,
+    "maximum": 15
   },
   "url": "https://github.com/p4535992/foundryvtt-playlist-import",
   "manifest": "https://github.com/p4535992/foundryvtt-playlist-import/releases/download/13.0.5/module.json",
