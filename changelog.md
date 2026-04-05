@@ -1,3 +1,7 @@
+### 14.0.0
+
+- Update manifest.json
+
 ### 13.0.5
 
 - feature and Bug fix: https://github.com/p4535992/foundryvtt-playlist-import/pull/24
